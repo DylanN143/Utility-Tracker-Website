@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import './Login-SignUp.css'
+import { useNavigate } from 'react-router-dom';
+import '../components/Header.css'
+import '../components/InputContainer.css'
 import '../components/Button.css'
 import InputBox from '../components/InputBox';
+
 
 function SignUp() {
     const [email, setEmail] = useState("")
@@ -22,6 +25,7 @@ function SignUp() {
     <div>
         <header className='header'>
             <p>Sign up</p>
+            <HomeButton/>
         </header>
         <form onSubmit={submit} className='input'>
             <InputBox
@@ -59,6 +63,14 @@ function SubmitButton() {
     return (
         <button type="submit" className='button'>Sign Up</button>
     );
+}
+
+function HomeButton() {
+  const navigate = useNavigate();
+
+  return (
+    <button className='button' onClick={() => navigate('/home')}>Home</button>
+  );
 }
 
 export default SignUp

@@ -1,18 +1,3 @@
-.Home {
-    text-align: center;
-  }
-  
-.Home-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    font-size: calc(10px + 2vmin);
-    color: white;
-    }
-  
 .buttons {
   position: absolute;
   top: 50%;
@@ -26,4 +11,5 @@
 .get-started {
   color: white;
   font-size: calc(10px + 2vmin);
+  text-align: center;
 }
