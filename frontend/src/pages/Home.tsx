@@ -5,16 +5,16 @@ import '../components/Header.css'
 
 function Home() {
   return (
-    <div>
-    <div className="buttons">
+    <div className="header">
+      <header>
+          <p>Welcome to "Name of Our Website"</p>
+      </header>
+      <div className="buttons">
         <p className="get-started">Get Started</p>
         <SignUp/>
         <Login/>
         <DataInput/>
-    </div>
-    <header className="header">
-        <p>Welcome to "Name of Our Webiste"</p>
-    </header>
+      </div>
     </div>
   );
 }
@@ -24,7 +24,7 @@ function SignUp()
   const navigate = useNavigate();
 
   return (
-    <button className="button" onClick={() => navigate('/signup')}>Sign Up</button>
+    <button className="homeButton" onClick={() => navigate('/signup')}>Sign Up</button>
   );
 }
 
@@ -33,7 +33,7 @@ function Login()
     const navigate = useNavigate();
 
     return (
-      <button className="button" onClick={() => navigate('/login')}>Login</button>
+      <button className="homeButton" onClick={() => navigate('/login')}>Login</button>
     );
 }
 
@@ -42,7 +42,7 @@ function DataInput()
     const navigate = useNavigate();
 
     return (
-      <button className="button" onClick={() => navigate('/datainput')}>Data Input</button>
+      <button className="homeButton" onClick={() => navigate('/datainput')}>Data Input</button>
     );
 }
 

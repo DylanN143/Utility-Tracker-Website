@@ -25,8 +25,8 @@ function DataInput() {
     };
 
     return (
-        <div>
-            <header className='header'>
+        <div className='header'>
+            <header>
                 <p>Utility Usage Data Input</p>
                 <HomeButton/>
             </header>

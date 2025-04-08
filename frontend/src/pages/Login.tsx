@@ -19,8 +19,8 @@ function Login() {
   };
 
   return (
-    <div>
-        <header className='header'>
+    <div className='header'>
+        <header>
             <p>Login</p>
             <HomeButton/>
         </header>
