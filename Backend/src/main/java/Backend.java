@@ -149,43 +149,23 @@ public class Backend extends HttpServlet
             String password = jsonParser.getString("password");
             String email = jsonParser.getString("email");
 
-            String getExistingUsername =
-            """
-            SELECT username FROM user U WHERE BINARY U.username = '%s';
-            """.formatted(username);
-
-            try (CachedRowSet result = sql.executeQuery(getExistingUsername))
+            // mySQL database already checks for unique username and email
+            try
             {
-                if (result.next()) // duplicate username exists
-                {
-                    operationSuccess = false;
-                }
-                else
-                {
-                    try
-                    {
-                        String addUserQuery =
-                        """
-                        INSERT INTO User (Username, Password, Email)
-                        VALUES ('%s', '%s', '%s');
-                        """.formatted(username, password, email);
-                        sql.executeUpdate(addUserQuery);
+                String addUserQuery =
+                """
+                INSERT INTO User (Username, Password, Email)
+                VALUES ('%s', '%s', '%s');
+                """.formatted(username, password, email);
+                sql.executeUpdate(addUserQuery);
 
-                        operationSuccess = true;
-                    }
-                    catch (SQLException e)
-                    {
-                        operationSuccess = false;
-                        System.out.println(e);
-                    }
-                }
+                operationSuccess = true;
             }
             catch (SQLException e)
             {
                 operationSuccess = false;
-                throw new RuntimeException(e);
+                System.out.println(e);
             }
-
         }
         // posts user's usage data to the database
         else if (id == POST.USER_USAGE_INFO)
