@@ -27,7 +27,7 @@ function Login() {
       if (response.data.PASSWORD_CHECK === true) {
         // Store username in sessionStorage for use in other components
         sessionStorage.setItem('username', username);
-        navigate('/datainput');
+        navigate('/dashboard');
       } else {
         setError("Invalid username or password");
       }
