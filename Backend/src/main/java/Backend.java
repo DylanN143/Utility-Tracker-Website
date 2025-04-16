@@ -22,8 +22,23 @@ class GET
 @WebServlet("/Backend")
 public class Backend extends HttpServlet
 {
-    // will prompt for password in console
-    SQL sql = new SQL("jdbc:mysql://localhost:3306/cs160project", "root", "PASSHERE");
+    private SQL sql = null;
+    private boolean operationSuccess = false;
+    private JSON successJSON = null;
+
+    @Override
+    public void init() throws ServletException
+    {
+        try
+        {
+            sql = new SQL("jdbc:mysql://localhost:3306/cs160project", "root", "YOURPASS");
+        }
+        catch (Exception e)
+        {
+            sql = null;
+            System.out.println(e);
+        }
+    }
 
     /** ALL REQUESTS/SEND SHOULD BE IN JSON **/
 
@@ -36,6 +51,15 @@ public class Backend extends HttpServlet
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
+        successJSON = new JSON();
+
+        if (sql == null)
+        {
+            successJSON.getJSON().addProperty("success", false);
+            printJSONResponse(response, successJSON);
+            return;
+        }
+
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
@@ -43,7 +67,6 @@ public class Backend extends HttpServlet
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        JSON jsonResponse = new JSON();
         int id = Integer.parseInt(request.getParameter("reqID"));
 
         // gets the password based on inputted username
@@ -67,27 +90,27 @@ public class Backend extends HttpServlet
 
                     if (databasePass.equals(password)) // password matches
                     {
-                        jsonResponse.getJSON().addProperty("PASSWORD_CHECK", true);
+                        operationSuccess = true;
                     }
                     else // password doesn't match
                     {
-                        jsonResponse.getJSON().addProperty("PASSWORD_CHECK", false);
+                        operationSuccess = false;
                     }
                 }
                 else // user not found
                 {
-                    jsonResponse.getJSON().addProperty("PASSWORD_CHECK", false);
+                    operationSuccess = false;
                 }
             }
             catch (SQLException e)
             {
+                operationSuccess = false;
                 System.out.println(e);
             }
         }
 
-        PrintWriter res = response.getWriter();
-        res.print(jsonResponse.getJSON().toString());
-        res.flush();
+        successJSON.getJSON().addProperty("success", operationSuccess);
+        printJSONResponse(response, successJSON);
     }
 
     /**
@@ -98,6 +121,15 @@ public class Backend extends HttpServlet
      * */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
+        successJSON = new JSON();
+
+        if (sql == null)
+        {
+            successJSON.getJSON().addProperty("success", false);
+            printJSONResponse(response, successJSON);
+            return;
+        }
+
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
@@ -117,19 +149,43 @@ public class Backend extends HttpServlet
             String password = jsonParser.getString("password");
             String email = jsonParser.getString("email");
 
-            try
+            String getExistingUsername =
+            """
+            SELECT username FROM user U WHERE BINARY U.username = '%s';
+            """.formatted(username);
+
+            try (CachedRowSet result = sql.executeQuery(getExistingUsername))
             {
-                String addUserQuery =
-                """
-                INSERT INTO User (Username, Password, Email)
-                VALUES ('%s', '%s', '%s');
-                """.formatted(username, password, email);
-                sql.executeUpdate(addUserQuery);
+                if (result.next()) // duplicate username exists
+                {
+                    operationSuccess = false;
+                }
+                else
+                {
+                    try
+                    {
+                        String addUserQuery =
+                        """
+                        INSERT INTO User (Username, Password, Email)
+                        VALUES ('%s', '%s', '%s');
+                        """.formatted(username, password, email);
+                        sql.executeUpdate(addUserQuery);
+
+                        operationSuccess = true;
+                    }
+                    catch (SQLException e)
+                    {
+                        operationSuccess = false;
+                        System.out.println(e);
+                    }
+                }
             }
             catch (SQLException e)
             {
-                System.out.println(e);
+                operationSuccess = false;
+                throw new RuntimeException(e);
             }
+
         }
         // posts user's usage data to the database
         else if (id == POST.USER_USAGE_INFO)
@@ -154,11 +210,13 @@ public class Backend extends HttpServlet
                 }
                 else
                 {
+                    operationSuccess = false;
                     throw new SQLException();
                 }
             }
             catch (SQLException e)
             {
+                operationSuccess = false;
                 System.out.println(e);
             }
 
@@ -184,12 +242,18 @@ public class Backend extends HttpServlet
                 VALUES (%s, %s);
                 """.formatted(userID, gas);
                 sql.executeUpdate(addGasUsage);
+
+                operationSuccess = true;
             }
             catch (SQLException e)
             {
+                operationSuccess = false;
                 System.out.println(e);
             }
         }
+
+        successJSON.getJSON().addProperty("success", operationSuccess);
+        printJSONResponse(response, successJSON);
     }
 
     @Override
@@ -200,5 +264,12 @@ public class Backend extends HttpServlet
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    void printJSONResponse(HttpServletResponse response, JSON json) throws IOException
+    {
+        PrintWriter res = response.getWriter();
+        res.print(json.getJSON().toString());
+        res.flush();
     }
 }
