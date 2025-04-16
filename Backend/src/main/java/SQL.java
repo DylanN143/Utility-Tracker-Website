@@ -42,7 +42,7 @@ class SQL
      * @param query The MYSQL query
      * @return Returns a CachedRowSet of the query's ResultSet
      */
-    public CachedRowSet executeQuery(String query)
+    public CachedRowSet executeQuery(String query) throws SQLException
     {
         RowSetFactory f = null;
         CachedRowSet c = null;
@@ -60,9 +60,8 @@ class SQL
         catch (SQLException | NullPointerException e)
         {
             System.out.println(e);
+            throw new SQLException();
         }
-
-        return c;
     }
 
     /**
@@ -70,7 +69,7 @@ class SQL
      * Executes an update, insert, or delete query
      * Returns false if something went wrong
      */
-    public boolean executeUpdate(String query)
+    public boolean executeUpdate(String query) throws SQLException
     {
         try (Statement st = connection.createStatement())
         {
@@ -79,7 +78,7 @@ class SQL
         catch (SQLException | NullPointerException e)
         {
             System.out.println(e);
-            return false;
+            throw new SQLException();
         }
 
         return true;

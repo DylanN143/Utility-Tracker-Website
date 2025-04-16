@@ -9,15 +9,13 @@ public class JSON
 
     /**
      * HTTP REQUEST ONLY CAN BE PARSED ONCE!!
-     * @param request
-     * @throws IOException
      */
-    public JSON(HttpServletRequest request) throws IOException
+    public JSON()
     {
-        parseJSON(request);
+        json = new JsonObject();
     }
 
-    private void parseJSON(HttpServletRequest request) throws IOException
+    public void parseRequestBody(HttpServletRequest request) throws IOException
     {
         StringBuilder res = new StringBuilder();
         BufferedReader b = request.getReader();
@@ -51,5 +49,10 @@ public class JSON
     public String getString(String attributeName) throws IOException
     {
         return json.get(attributeName).getAsString();
+    }
+
+    public JsonObject getJSON()
+    {
+        return json;
     }
 }
