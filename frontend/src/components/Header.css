@@ -1,10 +1,62 @@
 .header {
-    background-color: #22311D;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    font-size: calc(30px + 2vmin);
-    color: white;
+    background: var(--background-gradient);
+    color: var(--text-light);
+    padding: 0 20px;
+}
+
+.header header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header header p {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-logo svg {
+    width: 40px;
+    height: 40px;
+}
+
+.header-welcome {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.header-welcome h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.header-welcome p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    opacity: 0.9;
+    margin-bottom: 30px;
+}
+
+.logged-in-user {
+    font-size: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 30px;
+    margin-left: auto;
 }

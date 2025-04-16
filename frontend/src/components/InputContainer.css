@@ -6,4 +6,50 @@
     align-items: center;
     gap: 20px;
     z-index: 10;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 500px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 40px;
+    padding: 30px 40px;
+}
+
+.input-section {
+    margin-bottom: 20px;
+}
+
+.input-section-title {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: var(--text-light);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-section-title svg {
+    width: 20px;
+    height: 20px;
+}
+
+.form-message {
+    padding: 12px;
+    border-radius: var(--border-radius);
+    margin: 15px 0;
+    font-size: 0.9rem;
+}
+
+.success-message {
+    background-color: rgba(76, 175, 80, 0.2);
+    border: 1px solid rgba(76, 175, 80, 0.4);
+    color: #C8E6C9;
+}
+
+.error-message {
+    background-color: rgba(244, 67, 54, 0.2);
+    border: 1px solid rgba(244, 67, 54, 0.4);
+    color: #FFCDD2;
 }
