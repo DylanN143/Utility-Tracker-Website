@@ -16,12 +16,12 @@ function Dashboard() {
     
     // Check if user is logged in
     useEffect(() => {
-        // const loggedInUsername = sessionStorage.getItem('username');
-        // if (!loggedInUsername) {
-        //     navigate('/login');
-        //     return;
-        // }
-        // setUsername(loggedInUsername);
+        const loggedInUsername = sessionStorage.getItem('username');
+        if (!loggedInUsername) {
+            navigate('/login');
+            return;
+        }
+        setUsername(loggedInUsername);
     }, [navigate]);
 
     return (
