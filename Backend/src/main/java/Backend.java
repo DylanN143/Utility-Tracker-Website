@@ -1,12 +1,18 @@
 import java.io.*;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import com.google.gson.*;
+import com.mysql.cj.result.LocalDateValueFactory;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import jakarta.servlet.*;
 import javax.sql.rowset.CachedRowSet;
+import java.sql.Timestamp;
 
 class POST
 {
@@ -17,6 +23,7 @@ class POST
 class GET
 {
     public static final int GET_USER = 1;
+    public static final int DATA_PAST_SEVEN_DAYS = 2;
 }
 
 @WebServlet("/Backend")
@@ -108,6 +115,57 @@ public class Backend extends HttpServlet
                 System.out.println(e);
             }
         }
+        // bar graph data from the past 7 days
+        // url: http://localhost:8080/Backend/Backend?reqID=2&username=${username}
+        else if (id == GET.DATA_PAST_SEVEN_DAYS)
+        {
+            String username = request.getParameter("username");
+            int userID = getUserID(username);
+
+            String getWaterData =
+            """
+            SELECT gallons, datelogged FROM waterusage WHERE userid = %s ORDER BY datelogged desc;
+            """.formatted(userID);
+
+            String getElectricityData =
+            """
+            SELECT kilowatthour, datelogged FROM electricityusage WHERE userid = %s ORDER BY datelogged desc;
+            """.formatted(userID);
+
+            String getGasData =
+            """
+            SELECT cubicfeet, datelogged FROM gasusage WHERE userid = %s ORDER BY datelogged desc;
+            """.formatted(userID);
+
+            try
+            {
+                CachedRowSet waterData = sql.executeQuery(getWaterData);
+                CachedRowSet electricityData = sql.executeQuery(getElectricityData);
+                CachedRowSet gasData = sql.executeQuery(getGasData);
+
+                double[] waterResult = getDataLast7Days(waterData, "gallons");
+                double[] electricityResult = getDataLast7Days(electricityData, "kilowatthour");
+                double[] gasResult = getDataLast7Days(gasData, "cubicfeet");
+
+                Gson gson = new Gson();
+
+                String water = gson.toJson(waterResult);
+                successJSON.getJSON().addProperty("water", water);
+
+                String electricity = gson.toJson(electricityResult);
+                successJSON.getJSON().addProperty("electricity", electricity);
+
+                String gas = gson.toJson(gasResult);
+                successJSON.getJSON().addProperty("gas", gas);
+
+                operationSuccess = true;
+            }
+            catch (SQLException e)
+            {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
 
         successJSON.getJSON().addProperty("success", operationSuccess);
         printJSONResponse(response, successJSON);
@@ -174,54 +232,13 @@ public class Backend extends HttpServlet
             double electricity = jsonParser.getNumber("electricityUsage").doubleValue();
             double gas = jsonParser.getNumber("gasUsage").doubleValue();
             String username = jsonParser.getString("username");
-            int userID = -999;
-
-            // make sure user exists
-            String getUserQuery =
-            """
-            SELECT UserID FROM user U WHERE BINARY U.username = '%s';
-            """.formatted(username);
-
-            try (CachedRowSet result = sql.executeQuery(getUserQuery))
-            {
-                if (result.next())
-                {
-                    userID = result.getInt("UserID");
-                }
-                else
-                {
-                    operationSuccess = false;
-                    throw new SQLException();
-                }
-            }
-            catch (SQLException e)
-            {
-                operationSuccess = false;
-                System.out.println(e);
-            }
+            int userID = getUserID(username);
 
             try
             {
-                String addWaterUsage =
-                """
-                INSERT INTO WaterUsage (UserID, Gallons)
-                VALUES (%s, %s);
-                """.formatted(userID, water);
-                sql.executeUpdate(addWaterUsage);
-
-                String addElectricityUsage =
-                """
-                INSERT INTO ElectricityUsage (UserID, KilowattHour)
-                VALUES (%s, %s);
-                """.formatted(userID, electricity);
-                sql.executeUpdate(addElectricityUsage);
-
-                String addGasUsage =
-                """
-                INSERT INTO GasUsage (UserID, CubicFeet)
-                VALUES (%s, %s);
-                """.formatted(userID, gas);
-                sql.executeUpdate(addGasUsage);
+                addWaterUsage(userID, water);
+                addElectricityUsage(userID, electricity);
+                addGasUsage(userID, gas);
 
                 operationSuccess = true;
             }
@@ -251,5 +268,157 @@ public class Backend extends HttpServlet
         PrintWriter res = response.getWriter();
         res.print(json.getJSON().toString());
         res.flush();
+    }
+
+    int getUserID(String username)
+    {
+        String getUserQuery =
+        """
+        SELECT UserID FROM user U WHERE BINARY U.username = '%s';
+        """.formatted(username);
+
+        try (CachedRowSet result = sql.executeQuery(getUserQuery))
+        {
+            if (result.next())
+            {
+                return result.getInt("UserID");
+            }
+            else
+            {
+                operationSuccess = false;
+                throw new SQLException();
+            }
+        }
+        catch (SQLException e)
+        {
+            operationSuccess = false;
+            System.out.println(e);
+        }
+
+        return -1;
+    }
+
+    void addWaterUsage(int userID, double water) throws SQLException
+    {
+        String addWaterUsage =
+        """
+        INSERT INTO WaterUsage (UserID, Gallons)
+        VALUES (%s, %s);
+        """.formatted(userID, water);
+        sql.executeUpdate(addWaterUsage);
+
+        /*
+        Finds the most recent water usage entry
+        Deletes anything older for the same day
+        Keeps latest entry for each user
+         */
+        String deleteOldWater =
+        """
+        DELETE FROM WaterUsage
+        WHERE WaterID NOT IN (
+          SELECT t.latestID
+          FROM (
+            SELECT MAX(WaterID) AS latestID
+            FROM WaterUsage
+            GROUP BY UserID, DATE(DateLogged)
+          ) AS t
+        );
+        """;
+        sql.executeUpdate(deleteOldWater);
+    }
+
+    void addElectricityUsage(int userID, double electricity) throws SQLException
+    {
+        String addElectricityUsage =
+        """
+        INSERT INTO ElectricityUsage (UserID, KilowattHour)
+        VALUES (%s, %s);
+        """.formatted(userID, electricity);
+        sql.executeUpdate(addElectricityUsage);
+
+        /*
+        Finds the most recent electricity usage entry
+        Deletes anything older for the same day
+        Keeps latest entry for each user
+         */
+        String deleteOldElectricity =
+        """
+        DELETE FROM ElectricityUsage
+        WHERE ElectricityID NOT IN (
+          SELECT t.latestID
+          FROM (
+            SELECT MAX(ElectricityID) AS latestID
+            FROM ElectricityUsage
+            GROUP BY UserID, DATE(DateLogged)
+          ) AS t
+        );
+        """;
+        sql.executeUpdate(deleteOldElectricity);
+    }
+
+    void addGasUsage(int userID, double gas) throws SQLException
+    {
+        String addGasUsage =
+        """
+        INSERT INTO GasUsage (UserID, CubicFeet)
+        VALUES (%s, %s);
+        """.formatted(userID, gas);
+        sql.executeUpdate(addGasUsage);
+
+        /*
+        Finds the most recent gas usage entry
+        Deletes anything older for the same day
+        Keeps latest entry for each user
+         */
+        String deleteOldGas =
+        """
+        DELETE FROM GasUsage
+        WHERE GasID NOT IN (
+          SELECT t.latestID
+          FROM (
+            SELECT MAX(GasID) AS latestID
+            FROM GasUsage
+            GROUP BY UserID, DATE(DateLogged)
+          ) AS t
+        );
+        """;
+        sql.executeUpdate(deleteOldGas);
+    }
+
+    /**
+     * @param data Contains MySQL numbers and timestamps, nothing else
+     * @param columnKey String for the column name
+     * @return
+     * Double array of size 7 containing usage data <br>
+     * If past 7 days contains less than 7 parts of data, empty elements will contain -1
+     */
+    double[] getDataLast7Days(CachedRowSet data, String columnKey) throws SQLException
+    {
+        double[] result = new double[7];
+        int currentIndex = 0;
+
+        LocalDate today = LocalDate.now();
+        LocalDate lastDay = today.minusDays(7);
+
+        while (data.next())
+        {
+            Timestamp sqlDate = data.getTimestamp("DateLogged");
+            LocalDate localSQLDate = sqlDate.toLocalDateTime().toLocalDate();
+            double val = data.getDouble(columnKey);
+
+            if (localSQLDate.isAfter(lastDay) || localSQLDate.isEqual(lastDay))
+            {
+                result[currentIndex] = val;
+                ++currentIndex;
+            }
+        }
+
+        while (currentIndex < 7)
+        {
+            result[currentIndex] = -1;
+            ++currentIndex;
+        }
+
+        return result;
     }
 }
