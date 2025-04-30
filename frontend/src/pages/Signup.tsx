@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../components/Header.css'
 import '../components/InputContainer.css'
 import '../components/Button.css'
+import '../components/ErrorMessage.css'
 import InputBox from '../components/InputBox';
 import axios, { AxiosError } from 'axios'
 
@@ -32,7 +33,7 @@ function SignUp() {
 
         // Add better error handling and logging
         const sendingInfo = await axios.post(
-          `http://localhost:8081/Backend/Backend`, 
+          `http://localhost:8080/Backend/Backend`, 
           {reqID: 1, email, username, password}, {headers: headers});
 
         console.log("Signup response:", sendingInfo);
@@ -46,8 +47,17 @@ function SignUp() {
           navigate('/dashboard');
         } else {
           console.log("Signup failed:", sendingInfo.data);
-          setError("Signup failed: " + (sendingInfo.data?.message || "Unknown error"));
-          setTimeout(() => setError(""), 3000);
+          
+          // More specific error messages based on response
+          if (sendingInfo.data?.message) {
+            setError("Signup failed: " + sendingInfo.data.message);
+          } else {
+            // Check for common error scenarios
+            const errorMsg = "Signup failed: Username or email is already taken. Please try a different one.";
+            setError(errorMsg);
+          }
+          
+          setTimeout(() => setError(""), 5000);
         }
         
         setEmail("");
@@ -66,14 +76,24 @@ function SignUp() {
           console.error("Error response:", axiosError.response.data);
           // Use type assertion to handle unknown data structure
           const responseData = axiosError.response.data as any;
-          setError(`Sign up error: ${axiosError.response.status} - ${responseData?.message || 'Server error'}`);
+          
+          // More specific error messages based on status code
+          if (axiosError.response.status === 400) {
+            setError("Invalid input: Please check your email format and ensure all fields are filled correctly.");
+          } else if (axiosError.response.status === 409) {
+            setError("Username or email already exists. Please try a different one.");
+          } else if (axiosError.response.status === 500) {
+            setError("Server error: The system is temporarily unavailable. Please try again later.");
+          } else {
+            setError(`Sign up error: ${responseData?.message || 'Please check your information and try again.'}`);
+          }
         } else if (axiosError.request) {
           // The request was made but no response was received
           console.error("No response received:", axiosError.request);
-          setError("Network error: No response from server. Is the backend running?");
+          setError("Network error: Please check your internet connection and verify the backend server is running.");
         } else {
           // Something happened in setting up the request
-          setError("Something went wrong with the sign up: " + axiosError.message);
+          setError("Sign up failed: " + (axiosError.message || "Please try again later."));
         }
 
         // 5 seconds

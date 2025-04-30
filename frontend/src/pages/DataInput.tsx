@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../components/Header.css'
 import '../components/InputContainer.css'
 import '../components/Button.css'
+import '../components/ErrorMessage.css'
 import InputBox from '../components/InputBox';
 import axios, { AxiosError } from 'axios';
 
@@ -56,26 +57,40 @@ function DataInput() {
             
             console.log("Submitting data:", usageData);
             
-            const response = await axios.post('http://localhost:8081/Backend/Backend', usageData);
+            const response = await axios.post('http://localhost:8080/Backend/Backend', usageData);
             console.log("Response:", response);
             
-            setMessage("Data submitted successfully!");
+            setMessage("Data submitted successfully! Your utility usage has been recorded.");
             
             // Clear the form
             setDate("");
             setElectricityUsage("");
             setWaterUsage("");
             setGasUsage("");
+            
+            // Add navigation suggestion after a brief delay
+            setTimeout(() => {
+                setMessage("Data submitted successfully! Your utility usage has been recorded. View your updated charts on the Dashboard.");
+            }, 1500);
         } catch (err) {
             console.error("Error submitting data:", err);
             const axiosError = err as AxiosError;
             
             if (axiosError.response) {
-                setError(`Error submitting data: ${axiosError.response.status} - Server error`);
+                if (axiosError.response.status === 400) {
+                    setError("Invalid data: Please ensure all fields have valid numeric values.");
+                } else if (axiosError.response.status === 401) {
+                    setError("Session expired: Please log in again to continue.");
+                    setTimeout(() => navigate('/login'), 3000);
+                } else if (axiosError.response.status === 500) {
+                    setError("Server error: The system encountered an issue while saving your data. Please try again later.");
+                } else {
+                    setError(`Error submitting data: The server returned an error. Please try again later.`);
+                }
             } else if (axiosError.request) {
-                setError("Network error: No response from server. Is the backend running?");
+                setError("Network error: Unable to connect to the server. Please check your internet connection and verify the backend server is running.");
             } else {
-                setError("Error submitting data to server");
+                setError("Error submitting data: An unexpected error occurred. Please try again later.");
             }
         }
     };

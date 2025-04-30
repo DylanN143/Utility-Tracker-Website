@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../components/Header.css'
 import '../components/InputContainer.css'
 import '../components/Button.css'
+import '../components/ErrorMessage.css'
 import InputBox from '../components/InputBox';
 import axios, { AxiosError } from 'axios';
 
@@ -19,7 +20,7 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const url = `http://localhost:8081/Backend/Backend?reqID=1&username=${username}&password=${password}`;
+      const url = `http://localhost:8080/Backend/Backend?reqID=1&username=${username}&password=${password}`;
       const response = await axios.get(url);
       
       console.log("Login response:", response.data);
@@ -29,18 +30,26 @@ function Login() {
         sessionStorage.setItem('username', username);
         navigate('/dashboard');
       } else {
-        setError("Invalid username or password");
+        setError("Invalid username or password. Please check your credentials and try again.");
       }
     } catch (err) {
       console.error("Login error:", err);
       const axiosError = err as AxiosError;
       
       if (axiosError.response) {
-        setError(`Login error: ${axiosError.response.status} - Server error`);
+        if (axiosError.response.status === 401) {
+          setError("Unauthorized: Your session may have expired. Please log in again.");
+        } else if (axiosError.response.status === 403) {
+          setError("Access denied: You don't have permission to access this resource.");
+        } else if (axiosError.response.status === 500) {
+          setError("Server error: The system is temporarily unavailable. Please try again later.");
+        } else {
+          setError(`Login error: The server returned an error. Please try again later.`);
+        }
       } else if (axiosError.request) {
-        setError("Network error: No response from server. Is the backend running?");
+        setError("Network error: Unable to connect to the server. Please check your internet connection and verify the backend server is running.");
       } else {
-        setError("Error connecting to server");
+        setError("Login failed: An unexpected error occurred. Please try again later.");
       }
     } finally {
       setIsLoading(false);

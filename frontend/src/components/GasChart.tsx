@@ -37,12 +37,23 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
           return;
         }
 
-        const url = `http://localhost:8081/Backend/Backend?reqID=2&username=${username}`;
+        const url = `http://localhost:8080/Backend/Backend?reqID=2&username=${username}`;
         const response = await axios.get(url);
         
+        console.log('Backend response:', response.data);
+        
         if (response.data.success === true) {
-          // Parse the gas data string into an array
-          const gasData = JSON.parse(response.data.gas);
+          // Parse the gas data string into an array - or use directly if it's already an array
+          let gasData;
+          try {
+            // Try to parse if it's a string
+            gasData = JSON.parse(response.data.gas);
+            console.log('Parsed gas data:', gasData);
+          } catch (e) {
+            // If parsing fails, it might already be an array
+            gasData = response.data.gas;
+            console.log('Using gas data directly:', gasData);
+          }
           
           // Format data for chart
           const formattedData = [];
@@ -99,18 +110,26 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
             setChartData(formattedData);
           }
         } else {
-          setError('Failed to fetch data');
+          setError('No gas usage data available. Please add data in the Data Entry page.');
         }
       } catch (err) {
         console.error('Error fetching gas data:', err);
         const axiosError = err as AxiosError;
         
         if (axiosError.response) {
-          setError(`Error loading data: ${axiosError.response.status}`);
+          if (axiosError.response.status === 401) {
+            setError('Your session has expired. Please log in again.');
+          } else if (axiosError.response.status === 404) {
+            setError('No gas usage data found. Please add data in the Data Entry page.');
+          } else if (axiosError.response.status === 500) {
+            setError('Server error while retrieving gas usage data. Please try again later.');
+          } else {
+            setError(`Error loading gas data. Please refresh or try again later.`);
+          }
         } else if (axiosError.request) {
-          setError('Network error: No response from server');
+          setError('Network error: Unable to reach the server. Please check your internet connection.');
         } else {
-          setError('Error loading data');
+          setError('Error loading gas usage data. Please try refreshing the page.');
         }
       } finally {
         setLoading(false);
@@ -121,11 +140,20 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
   }, [combinedRefreshKey]); // Include combinedRefreshKey to trigger refresh
 
   if (loading) {
-    return <div style={{ color: 'white', textAlign: 'center' }}>Loading data...</div>;
+    return <div style={{ color: 'white', textAlign: 'center', padding: '10px', marginTop: '30px' }}>
+      <div style={{ fontSize: '14px', marginBottom: '5px' }}>Loading gas usage data...</div>
+      <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '3px solid rgba(255,255,255,0.2)', borderRadius: '50%', borderTop: '3px solid #ffffff', animation: 'spin 1s linear infinite' }}></div>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>;
   }
 
   if (error) {
-    return <div style={{ color: 'white', textAlign: 'center' }}>{error}</div>;
+    return <div className="data-error">{error}</div>;
   }
 
   return (
