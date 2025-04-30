@@ -122,48 +122,55 @@ public class Backend extends HttpServlet
             String username = request.getParameter("username");
             int userID = getUserID(username);
 
-            String getWaterData =
-            """
-            SELECT gallons, datelogged FROM waterusage WHERE userid = %s ORDER BY datelogged desc;
-            """.formatted(userID);
-
-            String getElectricityData =
-            """
-            SELECT kilowatthour, datelogged FROM electricityusage WHERE userid = %s ORDER BY datelogged desc;
-            """.formatted(userID);
-
-            String getGasData =
-            """
-            SELECT cubicfeet, datelogged FROM gasusage WHERE userid = %s ORDER BY datelogged desc;
-            """.formatted(userID);
-
-            try
+            if (userID != -1)
             {
-                CachedRowSet waterData = sql.executeQuery(getWaterData);
-                CachedRowSet electricityData = sql.executeQuery(getElectricityData);
-                CachedRowSet gasData = sql.executeQuery(getGasData);
+                String getWaterData =
+                        """
+                        SELECT gallons, datelogged FROM waterusage WHERE userid = %s ORDER BY datelogged desc;
+                        """.formatted(userID);
 
-                double[] waterResult = getDataLast7Days(waterData, "gallons");
-                double[] electricityResult = getDataLast7Days(electricityData, "kilowatthour");
-                double[] gasResult = getDataLast7Days(gasData, "cubicfeet");
+                String getElectricityData =
+                        """
+                        SELECT kilowatthour, datelogged FROM electricityusage WHERE userid = %s ORDER BY datelogged desc;
+                        """.formatted(userID);
 
-                Gson gson = new Gson();
+                String getGasData =
+                        """
+                        SELECT cubicfeet, datelogged FROM gasusage WHERE userid = %s ORDER BY datelogged desc;
+                        """.formatted(userID);
 
-                String water = gson.toJson(waterResult);
-                successJSON.getJSON().addProperty("water", water);
+                try
+                {
+                    CachedRowSet waterData = sql.executeQuery(getWaterData);
+                    CachedRowSet electricityData = sql.executeQuery(getElectricityData);
+                    CachedRowSet gasData = sql.executeQuery(getGasData);
 
-                String electricity = gson.toJson(electricityResult);
-                successJSON.getJSON().addProperty("electricity", electricity);
+                    double[] waterResult = getDataLast7Days(waterData, "gallons");
+                    double[] electricityResult = getDataLast7Days(electricityData, "kilowatthour");
+                    double[] gasResult = getDataLast7Days(gasData, "cubicfeet");
 
-                String gas = gson.toJson(gasResult);
-                successJSON.getJSON().addProperty("gas", gas);
+                    Gson gson = new Gson();
 
-                operationSuccess = true;
+                    String water = gson.toJson(waterResult);
+                    successJSON.getJSON().addProperty("water", water);
+
+                    String electricity = gson.toJson(electricityResult);
+                    successJSON.getJSON().addProperty("electricity", electricity);
+
+                    String gas = gson.toJson(gasResult);
+                    successJSON.getJSON().addProperty("gas", gas);
+
+                    operationSuccess = true;
+                }
+                catch (SQLException e)
+                {
+                    operationSuccess = false;
+                    System.out.println(e);
+                }
             }
-            catch (SQLException e)
+            else
             {
                 operationSuccess = false;
-                System.out.println(e);
             }
         }
 
@@ -234,18 +241,25 @@ public class Backend extends HttpServlet
             String username = jsonParser.getString("username");
             int userID = getUserID(username);
 
-            try
+            if (userID != -1)
             {
-                addWaterUsage(userID, water);
-                addElectricityUsage(userID, electricity);
-                addGasUsage(userID, gas);
+                try
+                {
+                    addWaterUsage(userID, water);
+                    addElectricityUsage(userID, electricity);
+                    addGasUsage(userID, gas);
 
-                operationSuccess = true;
+                    operationSuccess = true;
+                }
+                catch (SQLException e)
+                {
+                    operationSuccess = false;
+                    System.out.println(e);
+                }
             }
-            catch (SQLException e)
+            else
             {
                 operationSuccess = false;
-                System.out.println(e);
             }
         }
 
