@@ -4,7 +4,7 @@ import '../components/Header.css'
 import '../components/InputContainer.css'
 import '../components/Button.css'
 import InputBox from '../components/InputBox';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -19,12 +19,12 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const url = `http://localhost:8080/Backend/Backend?reqID=1&username=${username}&password=${password}`;
+      const url = `http://localhost:8081/Backend/Backend?reqID=1&username=${username}&password=${password}`;
       const response = await axios.get(url);
       
       console.log("Login response:", response.data);
       
-      if (response.data.PASSWORD_CHECK === true) {
+      if (response.data.success === true) {
         // Store username in sessionStorage for use in other components
         sessionStorage.setItem('username', username);
         navigate('/dashboard');
@@ -33,7 +33,15 @@ function Login() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Error connecting to server");
+      const axiosError = err as AxiosError;
+      
+      if (axiosError.response) {
+        setError(`Login error: ${axiosError.response.status} - Server error`);
+      } else if (axiosError.request) {
+        setError("Network error: No response from server. Is the backend running?");
+      } else {
+        setError("Error connecting to server");
+      }
     } finally {
       setIsLoading(false);
     }

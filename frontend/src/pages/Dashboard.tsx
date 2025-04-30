@@ -12,7 +12,13 @@ import myImage from '../images/forest.jpg';
 
 function Dashboard() {
     const [username, setUsername] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0); // For triggering refresh of all charts
     const navigate = useNavigate();
+    
+    // Function to refresh all charts at once
+    const refreshAllCharts = () => {
+        setRefreshKey(prev => prev + 1);
+    };
     
     // Check if user is logged in
     useEffect(() => {
@@ -55,17 +61,49 @@ function Dashboard() {
             </div>
             
             <div className='display-info'>
+                <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    width: '100%', 
+                    padding: '0 1rem',
+                    marginBottom: '1rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <h2 style={{ color: 'white' }}>Your Utility Usage</h2>
+                        <button 
+                            onClick={refreshAllCharts} 
+                            style={{ 
+                                background: 'rgba(255,255,255,0.2)', 
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '5px 10px',
+                                color: 'white',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', transform: 'rotate(0deg)' }}>↻</span> Refresh
+                        </button>
+                    </div>
+                    <div style={{ color: 'white', fontSize: '0.9rem' }}>
+                        <p>Data shown for the last 7 days</p>
+                    </div>
+                </div>
+                
                 <div className='display-card'>
-                    <h3>Lastest Electricity Usage</h3>
-                    <ElectricityChart />
+                    <h3>Latest Electricity Usage</h3>
+                    <ElectricityChart refreshKey={refreshKey} />
                 </div>
                 <div className='display-card'>
-                    <h3>Lastest Water Usage</h3>
-                    <WaterChart />
+                    <h3>Latest Water Usage</h3>
+                    <WaterChart refreshKey={refreshKey} />
                 </div>
                 <div className='display-card'>
-                    <h3>Lastest Gas Usage</h3>
-                    <GasChart />
+                    <h3>Latest Gas Usage</h3>
+                    <GasChart refreshKey={refreshKey} />
                 </div>
             </div>
         </div>
@@ -75,23 +113,34 @@ function Dashboard() {
 function HomeButton() {
   const navigate = useNavigate();
 
+  // Navigate to home without signing out
+  const goToHome = () => {
+    navigate('/dashboard');
+  };
+
   return (
-    <button className='button-outlined' onClick={() => navigate('/home')}>
+    <button className='button-outlined' onClick={goToHome}>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
         </svg>
-        Home
+        Dashboard
     </button>
   );
 }
 
 function SignOut() {
+    const navigate = useNavigate();
+    
+    const handleSignOut = () => {
+        sessionStorage.removeItem('username');
+        navigate('/home');
+    };
   
     return (
-      <button className='button-outlined' onClick={() => sessionStorage.removeItem('username')}>
-          {/* <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
-          </svg> */}
+      <button className='button-outlined' onClick={handleSignOut}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
           Sign Out
       </button>
     );

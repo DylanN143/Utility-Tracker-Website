@@ -4,7 +4,7 @@ import '../components/Header.css'
 import '../components/InputContainer.css'
 import '../components/Button.css'
 import InputBox from '../components/InputBox';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 function DataInput() {
     const [date, setDate] = useState("")
@@ -37,17 +37,26 @@ function DataInput() {
         }
         
         try {
+            if (!date) {
+                setError("Please select a date");
+                return;
+            }
+            
+            // Format the date to ensure it's in a consistent format (YYYY-MM-DD)
+            const formattedDate = new Date(date).toISOString().split('T')[0];
+            
             const usageData = {
                 reqID: 2, // USER_USAGE_INFO
                 waterUsage: parseFloat(waterUsage),
                 electricityUsage: parseFloat(electricityUsage),
                 gasUsage: parseFloat(gasUsage),
-                username: username
+                username: username,
+                date: formattedDate
             };
             
             console.log("Submitting data:", usageData);
             
-            const response = await axios.post('http://localhost:8080/Backend/Backend', usageData);
+            const response = await axios.post('http://localhost:8081/Backend/Backend', usageData);
             console.log("Response:", response);
             
             setMessage("Data submitted successfully!");
@@ -59,7 +68,15 @@ function DataInput() {
             setGasUsage("");
         } catch (err) {
             console.error("Error submitting data:", err);
-            setError("Error submitting data to server");
+            const axiosError = err as AxiosError;
+            
+            if (axiosError.response) {
+                setError(`Error submitting data: ${axiosError.response.status} - Server error`);
+            } else if (axiosError.request) {
+                setError("Network error: No response from server. Is the backend running?");
+            } else {
+                setError("Error submitting data to server");
+            }
         }
     };
 
@@ -82,7 +99,10 @@ function DataInput() {
                     </div>
                 )}
                 
-                <HomeButton/>
+                <div>
+                    <HomeButton/>
+                    <SignOut/>
+                </div>
             </header>
             
             <div className="header-welcome">
@@ -98,6 +118,20 @@ function DataInput() {
                         </svg>
                         Usage Details
                     </div>
+                    
+                    <InputBox
+                        label="Date"
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        placeholder="Select date"
+                        required
+                        icon={
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#757575">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zM5 7V5h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                            </svg>
+                        }
+                    />
                     
                     <InputBox
                         label="Electricity Usage"
@@ -166,13 +200,31 @@ function HomeButton() {
   const navigate = useNavigate();
 
   return (
-    <button className='button-outlined' onClick={() => navigate('/home')}>
+    <button className='button-outlined' onClick={() => navigate('/dashboard')}>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
         </svg>
-        Home
+        Dashboard
     </button>
   );
+}
+
+function SignOut() {
+    const navigate = useNavigate();
+    
+    const handleSignOut = () => {
+        sessionStorage.removeItem('username');
+        navigate('/home');
+    };
+  
+    return (
+      <button className='button-outlined' onClick={handleSignOut}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          Sign Out
+      </button>
+    );
 }
 
 export default DataInput
