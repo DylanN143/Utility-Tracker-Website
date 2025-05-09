@@ -38,7 +38,7 @@ public class Backend extends HttpServlet
     {
         try
         {
-            sql = new SQL("jdbc:mysql://localhost:3306/cs160project", "root", "YOURPASS");
+            sql = new SQL("jdbc:mysql://localhost:3306/cs160project", "root", "");
         }
         catch (Exception e)
         {

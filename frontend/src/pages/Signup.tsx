@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import '../components/Header.css'
 import '../components/InputContainer.css'
 import '../components/Button.css'
+import '../components/ErrorMessage.css'
 import InputBox from '../components/InputBox';
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 
 function SignUp() {
     const [email, setEmail] = useState("")
@@ -24,29 +25,82 @@ function SignUp() {
 
       try 
       {
+        // Log attempt for debugging
+        console.log("Attempting to sign up with:", {email, username, password});
+        
         // Can also use the url: 
         // `http://localhost:8080/Backend/Backend?reqID=1&email=${email}&username=${username}&password=${password}`
 
-        // use .get to get data from database
+        // Add better error handling and logging
         const sendingInfo = await axios.post(
           `http://localhost:8080/Backend/Backend`, 
           {reqID: 1, email, username, password}, {headers: headers});
 
-        console.log("Successful signup");
+        console.log("Signup response:", sendingInfo);
+        
+        // Check if response was successful
+        if (sendingInfo.data && sendingInfo.data.success) {
+          console.log("Successful signup");
+          // Store username in session
+          sessionStorage.setItem('username', username);
+          // Navigate to dashboard after successful signup
+          navigate('/dashboard');
+        } else {
+          console.log("Signup failed:", sendingInfo.data);
+          
+          // More specific error messages based on response
+          if (sendingInfo.data?.message) {
+            setError("Signup failed: " + sendingInfo.data.message);
+          } else {
+            // Check for common error scenarios
+            const errorMsg = "Signup failed: Username or email is already taken. Please try a different one.";
+            setError(errorMsg);
+          }
+          
+          setTimeout(() => setError(""), 5000);
+        }
+        
         setEmail("");
         setUsername("");
         setPassword("");
       }
-      catch
+      catch (error)
       {
-        console.log("Sign up error");
-        setError("Something went wrong with the sign up!");
+        console.error("Sign up error:", error);
+        
+        // Type assertion for Axios error
+        const axiosError = error as AxiosError;
+        
+        // Check if it's an Axios error with a response
+        if (axiosError.response) {
+          console.error("Error response:", axiosError.response.data);
+          // Use type assertion to handle unknown data structure
+          const responseData = axiosError.response.data as any;
+          
+          // More specific error messages based on status code
+          if (axiosError.response.status === 400) {
+            setError("Invalid input: Please check your email format and ensure all fields are filled correctly.");
+          } else if (axiosError.response.status === 409) {
+            setError("Username or email already exists. Please try a different one.");
+          } else if (axiosError.response.status === 500) {
+            setError("Server error: The system is temporarily unavailable. Please try again later.");
+          } else {
+            setError(`Sign up error: ${responseData?.message || 'Please check your information and try again.'}`);
+          }
+        } else if (axiosError.request) {
+          // The request was made but no response was received
+          console.error("No response received:", axiosError.request);
+          setError("Network error: Please check your internet connection and verify the backend server is running.");
+        } else {
+          // Something happened in setting up the request
+          setError("Sign up failed: " + (axiosError.message || "Please try again later."));
+        }
 
-        // 3 seconds
+        // 5 seconds
         setTimeout(() => 
         {
           setError("");
-        }, 3000) 
+        }, 5000) 
       }
     };
 
