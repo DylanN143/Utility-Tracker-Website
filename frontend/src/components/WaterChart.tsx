@@ -68,7 +68,7 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
             const dateStr = `${day.getMonth() + 1}/${day.getDate()}`;
             dateMappings.push({ 
               date: dateStr, 
-              index: 6-i  // Map to the corresponding index in the backend data
+              index: i  // Map to the corresponding index in the backend data
             });
           }
           
