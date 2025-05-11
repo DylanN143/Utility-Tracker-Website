@@ -9,9 +9,12 @@ import ElectricityChart from '../components/ElectricityChart';
 import WaterChart from '../components/WaterChart';
 import GasChart from '../components/GasChart';
 import myImage from '../images/forest.jpg';
+import axios from 'axios';
 
 function Dashboard() {
     const [username, setUsername] = useState("");
+    const [notificationFreq, setNotificationFreq] = useState("");
+    const [notificationType, setNotificationType] = useState("");
     const [refreshKey, setRefreshKey] = useState(0); // For triggering refresh of all charts
     const navigate = useNavigate();
     
@@ -29,6 +32,30 @@ function Dashboard() {
         }
         setUsername(loggedInUsername);
     }, [navigate]);
+
+    const handleFreqChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setNotificationFreq(e.target.value);
+        const updateSetings = {
+            reqID: 3, // UPDATE_NOTIFICATION_FREQ
+            notificationFreq: e.target.value,
+            username: username
+        };
+            
+        const response = await axios.post('http://localhost:8080/Backend/Backend', updateSetings);
+        console.log("Response:", response);
+    };
+
+    const handleTypeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setNotificationType(e.target.value);
+        const updateSetings = {
+            reqID: 4, // UPDATE_NOTIFICATION_TYPE
+            notificationType: e.target.value,
+            username: username
+        };
+            
+        const response = await axios.post('http://localhost:8080/Backend/Backend', updateSetings);
+        console.log("Response:", response);
+    };
 
     return (
         <div className='header'>
@@ -58,6 +85,26 @@ function Dashboard() {
 
             <div className="banner">
                 <img className='banner-img' src={myImage}/>
+            </div>
+
+            <div className='dropdown-area'>
+                <div className='dropdown'>
+                    <label htmlFor='freq'>Notification Frequency: </label>
+                    <select id='freq' value={notificationFreq} onChange={handleFreqChange}>
+                        <option value="">--Select--</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+
+                <div className='dropdown'>
+                    <label htmlFor="type">Notification Type: </label>
+                    <select id="type" value={notificationType} onChange={handleTypeChange}>
+                        <option value="">--Select--</option>
+                        <option value="text">Text</option>
+                        <option value="email">Email</option>
+                    </select>
+                </div>
             </div>
             
             <div className='display-info'>

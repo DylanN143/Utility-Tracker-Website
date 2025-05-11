@@ -18,6 +18,8 @@ class POST
 {
     public static final int ADD_USER = 1;
     public static final int USER_USAGE_INFO = 2;
+    public static final int UPDATE_NOTIFICATION_FREQUENCY = 3;
+    public static final int UPDATE_NOTIFICATION_TYPE = 4;
 }
 
 class GET
@@ -279,6 +281,66 @@ public class Backend extends HttpServlet
                     addWaterUsage(userID, water);
                     addElectricityUsage(userID, electricity);
                     addGasUsage(userID, gas);
+
+                    operationSuccess = true;
+                }
+                catch (SQLException e)
+                {
+                    operationSuccess = false;
+                    System.out.println(e);
+                }
+            }
+            else
+            {
+                operationSuccess = false;
+            }
+        }
+        // update user's notification frequency
+        else if (id == POST.UPDATE_NOTIFICATION_FREQUENCY)
+        {
+            String notificationFreq = jsonParser.getString("notificationFreq");
+            String username = jsonParser.getString("username");
+            int userID = getUserID(username);
+
+            if (userID != -1)
+            {
+                try
+                {
+                    String updateNotificationFreq =
+                    """
+                    UPDATE user SET NotificationFrequency = '%s' WHERE userid = %s;
+                    """.formatted(notificationFreq, userID);
+                    sql.executeUpdate(updateNotificationFreq);
+
+                    operationSuccess = true;
+                }
+                catch (SQLException e)
+                {
+                    operationSuccess = false;
+                    System.out.println(e);
+                }
+            }
+            else
+            {
+                operationSuccess = false;
+            }
+        }
+        // update user's notification type
+        else if (id == POST.UPDATE_NOTIFICATION_TYPE)
+        {
+            String notificationType = jsonParser.getString("notificationType");
+            String username = jsonParser.getString("username");
+            int userID = getUserID(username);
+
+            if (userID != -1)
+            {
+                try
+                {
+                    String updateNotificationType =
+                    """
+                    UPDATE user SET notificationtype = '%s' WHERE userid = %s;
+                    """.formatted(notificationType, userID);
+                    sql.executeUpdate(updateNotificationType);
 
                     operationSuccess = true;
                 }
