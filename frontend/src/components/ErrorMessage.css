@@ -19,7 +19,13 @@
 
 .success-message {
   background-color: rgba(39, 174, 96, 0.15);
-  color: #27ae60;
+  color: #ffffff;
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.advice-message {
+  background-color: rgba(255, 153, 0, 0.25);
+  color: #ffffff;
   border: 1px solid rgba(39, 174, 96, 0.3);
 }
 

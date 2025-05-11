@@ -24,6 +24,7 @@ class GET
 {
     public static final int GET_USER = 1;
     public static final int DATA_PAST_SEVEN_DAYS = 2;
+    public static final int GET_ADVICE = 3;
 }
 
 @WebServlet("/Backend")
@@ -171,6 +172,36 @@ public class Backend extends HttpServlet
             else
             {
                 operationSuccess = false;
+            }
+        }
+        // get water saving advice
+        // url: http://localhost:8080/Backend/Backend?reqID=3&utilityType=${utilityType}
+        else if (id == GET.GET_ADVICE)
+        {
+            String utilityType = request.getParameter("utilityType");
+
+            String getUtilityAdvice =
+                    """
+                    SELECT title, content FROM advice WHERE utilitytype = '%s';
+                    """.formatted(utilityType);
+
+            try
+            {
+                CachedRowSet adviceList = sql.executeQuery(getUtilityAdvice);
+
+                String adviceResult = getAdvice(adviceList);
+
+                Gson gson = new Gson();
+
+                String advice = gson.toJson(adviceResult);
+                successJSON.getJSON().addProperty("advice", advice);
+
+                operationSuccess = true;
+            }
+            catch (SQLException e)
+            {
+                operationSuccess = false;
+                System.out.println(e);
             }
         }
 
@@ -431,6 +462,31 @@ public class Backend extends HttpServlet
         {
             result[currentIndex] = -1;
             ++currentIndex;
+        }
+
+        return result;
+    }
+
+    /**
+     * @param data Contains MySQL strings, nothing else
+     * @return
+     * String with advice
+     */
+    String getAdvice(CachedRowSet data) throws SQLException
+    {
+        String result = "";
+
+        int adviceNum = (int)(Math.random() * 6);
+
+        if (data.next())
+        {
+            for (int i = 0; i < adviceNum; i++)
+            {
+                data.next();
+            }
+
+            result = data.getString("title") + ": ";
+            result += data.getString("content");
         }
 
         return result;

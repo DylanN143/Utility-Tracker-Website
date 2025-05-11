@@ -15,6 +15,10 @@ function DataInput() {
     const [username, setUsername] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [advice, setAdvice] = useState("");
+    const [electricityAdvice, setelectricityAdvice] = useState("");
+    const [waterAdvice, setWaterAdvice] = useState("");
+    const [gasAdvice, setGasAdvice] = useState("");
     const navigate = useNavigate();
     
     // Check if user is logged in
@@ -31,6 +35,10 @@ function DataInput() {
         e.preventDefault();
         setMessage("");
         setError("");
+        setelectricityAdvice("");
+        setWaterAdvice("");
+        setGasAdvice("");
+        setAdvice("");
         
         if (!username) {
             setError("You must be logged in to submit data");
@@ -61,6 +69,69 @@ function DataInput() {
             console.log("Response:", response);
             
             setMessage("Data submitted successfully! Your utility usage has been recorded.");
+
+            if (parseInt(electricityUsage) > 26.2)
+            {
+                const url = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'electricity'}`;
+                const response = await axios.get(url);
+
+                if (response.data.success === true) {
+                    // Parse the electricity advice
+                    let electricityAdvice;
+                    try {
+                        // Try to parse and set message
+                        electricityAdvice = JSON.parse(response.data.advice);
+                        console.log('Electricity advice:', electricityAdvice);
+                        setAdvice("Your utilities usage is higher than the average in your area, check out some tips to save below!");
+                        setelectricityAdvice(electricityAdvice);
+                    } catch (e) {
+                        // If parsing fails, output error
+                        console.log('Advice retrieval failed:');
+                    }
+                }
+            }
+
+            if (parseInt(waterUsage) > 201.6)
+            {
+                const url = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'water'}`;
+                const response = await axios.get(url);
+
+                if (response.data.success === true) {
+                    // Parse the water advice
+                    let waterAdvice;
+                    try {
+                        // Try to parse and set message
+                        waterAdvice = JSON.parse(response.data.advice);
+                        console.log('Water advice:', waterAdvice);
+                        setAdvice("Your utilities usage is higher than the average in your area, check out some tips to save below!");
+                        setWaterAdvice(waterAdvice);
+                    } catch (e) {
+                        // If parsing fails, output error
+                        console.log('Advice retrieval failed:');
+                    }
+                }
+            }
+
+            if (parseInt(gasUsage) > 93.3)
+            {
+                const url = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'gas'}`;
+                const response = await axios.get(url);
+
+                if (response.data.success === true) {
+                    // Parse the water advice
+                    let gasAdvice;
+                    try {
+                        // Try to parse and set message
+                        gasAdvice = JSON.parse(response.data.advice);
+                        console.log('Gas advice:', gasAdvice);
+                        setAdvice("Your utilities usage is higher than the average in your area, check out some tips to save below!");
+                        setGasAdvice(gasAdvice);
+                    } catch (e) {
+                        // If parsing fails, output error
+                        console.log('Advice retrieval failed:');
+                    }
+                }
+            }
             
             // Clear the form
             setDate("");
@@ -192,6 +263,10 @@ function DataInput() {
                 </div>
                 
                 {message && <div className="form-message success-message">{message}</div>}
+                {advice && <div className='form-message advice-message'>{advice}</div>}
+                {electricityAdvice && <div className='form-message advice-message'>{electricityAdvice}</div>}
+                {waterAdvice && <div className='form-message advice-message'>{waterAdvice}</div>}
+                {gasAdvice && <div className='form-message advice-message'>{gasAdvice}</div>}
                 {error && <div className="form-message error-message">{error}</div>}
                 
                 <SubmitButton/>
