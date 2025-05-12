@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Community.css';
-// Import mock data for demo
-import { mockCommunity } from '../mockData/userData';
 
 interface CommunityProps {
   username: string;
@@ -12,13 +10,13 @@ interface LeaderboardEntry {
   userId: number;
   username: string;
   points: number;
+  isUser: boolean;
   challengesCompleted: number;
 }
 
 interface FriendRequest {
   userId: number;
   username: string;
-  dateSent: string;
 }
 
 const Community: React.FC<CommunityProps> = ({ username }) => {
@@ -40,28 +38,25 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-
-      // DEMO MODE: Use mock data instead of API calls
-      console.log('Using mock community data for demo');
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Use mock community data
-      setLeaderboard(mockCommunity.leaderboard);
-      setFriends(mockCommunity.friends);
-      setFriendRequests(mockCommunity.friendRequests);
-      setLoading(false);
       setError('');
-
-      /* Original server-based code (commented out for demo)
+      
       // Fetch leaderboard
       const leaderboardResponse = await axios.get(
-        'http://localhost:8080/Backend/Backend?reqID=8'
+        `http://localhost:8080/Backend/Backend?reqID=8&username=${username}`
       );
 
-      if (leaderboardResponse.data.success) {
-        setLeaderboard(leaderboardResponse.data.leaderboard || []);
+      if (leaderboardResponse.data.success && Array.isArray(leaderboardResponse.data.leaderboard)) {
+        const mappedProperties: LeaderboardEntry[] = leaderboardResponse.data.leaderboard.map((l: any) => ({
+          userId: l.id,
+          username: l.username,
+          points: l.points,
+          challengesCompleted: l.challengesCompleted,
+          isUser: l.isUser
+        }));
+        setLeaderboard(mappedProperties);
+      }
+      else {
+        console.log("No users found");
       }
 
       // Fetch user's friends
@@ -69,33 +64,43 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
         `http://localhost:8080/Backend/Backend?reqID=9&username=${username}`
       );
 
-      if (friendsResponse.data.success) {
-        setFriends(friendsResponse.data.friends || []);
+      if (friendsResponse.data.success && Array.isArray(friendsResponse.data.friends)) {
+        console.log(friendsResponse.data);
+        const mappedProperties: LeaderboardEntry[] = friendsResponse.data.friends.map((l: any) => ({
+          userId: l.id,
+          username: l.username,
+          points: l.points,
+          challengesCompleted: l.challengesCompleted,
+          isUser: l.isUser
+        }));
+        setFriends(mappedProperties);
+      }
+      else {
+        console.log("No friends found");
       }
 
       // Fetch friend requests
       const requestsResponse = await axios.get(
-        `http://localhost:8080/Backend/Backend?reqID=10&username=${username}`
+        `http://localhost:8080/Backend/Backend?reqID=3&username=${username}`
       );
 
-      if (requestsResponse.data.success) {
-        setFriendRequests(requestsResponse.data.friendRequests || []);
+      if (requestsResponse.data.success && Array.isArray(requestsResponse.data.friends)) {
+        const mappedProperties: FriendRequest[] = requestsResponse.data.friends.map((f: any) => ({
+          userId: f.id,
+          username: f.username
+        }));
+        setFriendRequests(mappedProperties);
+      }
+      else {
+        console.log("No friends found");
       }
 
       setLoading(false);
-      */
     } catch (err) {
       console.error('Error fetching community data:', err);
       setError('Failed to load community data. Please try again later.');
       setLoading(false);
     }
-  };
-
-  // Function to "send" a friend request in demo mode
-  const handleDemoFriendRequest = async (newFriendUsername: string) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setSuccessMessage(`Friend request sent to ${newFriendUsername}`);
-    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const sendFriendRequest = async (e: React.FormEvent) => {
@@ -106,16 +111,11 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
       return;
     }
 
-    // DEMO MODE: Use mock friend request function
-    handleDemoFriendRequest(friendUsername);
-    setFriendUsername(''); // Clear input field
-
-    /* Original server-based code (commented out for demo)
     try {
       const response = await axios.post('http://localhost:8080/Backend/Backend', {
-        reqID: 8, // SEND_FRIEND_REQUEST
-        senderUsername: username,
-        receiverUsername: friendUsername
+        reqID: 3, // ADD_FRIEND
+        sender: username,
+        receiver: friendUsername
       });
 
       if (response.data.success) {
@@ -131,43 +131,15 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
       setError('Failed to send friend request. Please try again.');
       setTimeout(() => setError(''), 3000);
     }
-    */
-  };
-
-  // Function to handle friend request response in demo mode
-  const handleDemoFriendResponse = async (requesterUsername: string, responseType: 'accept' | 'reject') => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setSuccessMessage(`You have ${responseType === 'accept' ? 'accepted' : 'rejected'} the friend request.`);
-
-    // In demo mode, update the UI to reflect the change
-    if (responseType === 'accept') {
-      // Add the friend to the friends list
-      const newFriend = {
-        userId: Math.floor(Math.random() * 1000), // Demo ID
-        username: requesterUsername,
-        points: Math.floor(Math.random() * 200),
-        challengesCompleted: Math.floor(Math.random() * 5)
-      };
-      setFriends([...friends, newFriend]);
-    }
-
-    // Remove from friend requests in either case
-    setFriendRequests(friendRequests.filter(req => req.username !== requesterUsername));
-
-    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const respondToFriendRequest = async (requesterUsername: string, response: 'accept' | 'reject') => {
-    // DEMO MODE: Use mock friend response function
-    handleDemoFriendResponse(requesterUsername, response);
-
-    /* Original server-based code (commented out for demo)
     try {
       const apiResponse = await axios.post('http://localhost:8080/Backend/Backend', {
-        reqID: 9, // RESPOND_TO_FRIEND_REQUEST
-        responderUsername: username,
-        requesterUsername,
-        response
+        reqID: 7, // RESPOND_TO_FRIEND_REQUEST
+        sender: requesterUsername,
+        receiver: username,
+        action: response ? 'accepted' : 'rejected'
       });
 
       if (apiResponse.data.success) {
@@ -185,7 +157,6 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
       setError('Failed to respond to friend request. Please try again.');
       setTimeout(() => setError(''), 3000);
     }
-    */
   };
 
   const getInitials = (name: string) => {

@@ -26,9 +26,9 @@ function Login() {
       console.log("Login response:", response.data);
 
       if (response.data.success === true) {
-        // Store username in localStorage for use in other components
-        localStorage.setItem('username', username);
-        localStorage.setItem('isLoggedIn', 'true');
+        // Store username in sessionStorage for use in other components
+        sessionStorage.setItem('username', username);
+        sessionStorage.setItem('isLoggedIn', 'true');
         navigate('/dashboard');
       } else {
         setError("Invalid username or password. Please check your credentials and try again.");

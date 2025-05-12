@@ -32,26 +32,6 @@ export const mockNews = [
   }
 ];
 
-// Mock community data
-export const mockCommunity = {
-  leaderboard: [
-    { userId: 1, username: 'EcoSarah', points: 350, challengesCompleted: 7 },
-    { userId: 3, username: 'EarthAmy', points: 325, challengesCompleted: 6 },
-    { userId: 2, username: 'GreenMike', points: 275, challengesCompleted: 5 },
-    { userId: 8, username: 'demo', points: 150, challengesCompleted: 4 }, // Updated completed challenges count
-    { userId: 5, username: 'EnviroEmma', points: 140, challengesCompleted: 3 },
-    { userId: 4, username: 'SustainableJohn', points: 125, challengesCompleted: 2 }
-  ],
-  friends: [
-    { userId: 1, username: 'EcoSarah', points: 350, challengesCompleted: 7 },
-    { userId: 3, username: 'EarthAmy', points: 325, challengesCompleted: 6 },
-    { userId: 5, username: 'EnviroEmma', points: 200, challengesCompleted: 4 }
-  ],
-  friendRequests: [
-    { userId: 2, username: 'GreenMike', dateSent: '2025-05-10T14:22:31.000Z' }
-  ]
-};
-
 // Mock notifications with rich data
 export const mockNotifications = [
   "You've completed the 'Leak Audit Challenge' and earned 30 points!",

@@ -32,12 +32,13 @@ class GET
 {
     public static final int GET_USER = 1;
     public static final int DATA_PAST_SEVEN_DAYS = 2;
-    public static final int GET_FRIENDS = 3;
+    public static final int GET_FRIEND_REQUEST = 3;
     public static final int GET_CHALLENGES = 4;
     public static final int GET_USER_PROGRESS = 5;
     public static final int GET_ADVICE = 6;
     public static final int GET_NEWS = 7;
     public static final int GET_LEADERBOARD = 8;
+    public static final int GET_FRIENDS_LEADERBOARD = 9;
 }
 
 @WebServlet("/Backend")
@@ -189,20 +190,20 @@ public class Backend extends HttpServlet
         }
         // get list of friends to display
         // url: http://localhost:8080/Backend/Backend?reqID=3&username=${username}
-        else if (id == GET.GET_FRIENDS)
+        else if (id == GET.GET_FRIEND_REQUEST)
         {
             String username = request.getParameter("username");
         
             try {
                 int userID = getUserID(username);
                 String friendsQuery = """
-                    SELECT U.Username, F.RequestStatus
+                    SELECT U.UserID, U.Username
                     FROM Friend F
                     JOIN User U ON
                         (U.UserID = F.ReceiverID AND F.SenderID = %s)
                         OR
                         (U.UserID = F.SenderID AND F.ReceiverID = %s)
-                    WHERE U.UserID != %s;
+                    WHERE U.UserID != %s AND F.RequestStatus = 'pending';
                 """.formatted(userID, userID, userID);
         
                 CachedRowSet result = sql.executeQuery(friendsQuery);
@@ -210,8 +211,9 @@ public class Backend extends HttpServlet
         
                 while (result.next()) {
                     JsonObject obj = new JsonObject();
+                    obj.addProperty("id", result.getString("UserID"));
                     obj.addProperty("username", result.getString("Username"));
-                    obj.addProperty("status", result.getString("RequestStatus"));
+                    // obj.addProperty("status", result.getString("RequestStatus"));
                     friends.add(obj);
                 }
         
@@ -430,7 +432,7 @@ public class Backend extends HttpServlet
         }
         // get leaderboard based on the friends on the current user
         // url: http://localhost:8080/Backend/Backend?reqID=8&username=${username}
-        else if (id == GET.GET_LEADERBOARD) 
+        else if (id == GET.GET_LEADERBOARD)
         {
             String username = request.getParameter("username");
 
@@ -439,16 +441,73 @@ public class Backend extends HttpServlet
                 
                 // Query to get user's total points
                 String userPointsQuery = """
-                    SELECT Username, SUM(PointsEarned) AS TotalPoints
+                    SELECT Username, SUM(PointsEarned) AS TotalPoints, COUNT(*) AS ChallengesCompleted
                     FROM User U
                     JOIN UserChallengeProgress UCP ON U.UserID = UCP.UserID
-                    WHERE U.UserID = %s
+                    WHERE U.UserID = %s AND UCP.ChallengeStatus = 'completed'
                     GROUP BY U.UserID;
                 """.formatted(userID);
                 
                 // Query to get friend's total points
+                String allUsersPointsQuery = """
+                    SELECT U.UserID, U.Username, SUM(UCP.PointsEarned) AS TotalPoints, COUNT(*) AS ChallengesCompleted
+                    FROM User U
+                    JOIN UserChallengeProgress UCP ON U.UserID = UCP.UserID
+                    WHERE UCP.ChallengeStatus = 'completed' AND NOT U.UserID = %s
+                    GROUP BY U.UserID
+                    ORDER BY TotalPoints DESC;
+                """.formatted(userID);
+
+                // Execute queries
+                CachedRowSet userResult = sql.executeQuery(userPointsQuery);
+                CachedRowSet allUsersResult = sql.executeQuery(allUsersPointsQuery);
+
+                JsonArray leaderboard = new JsonArray();
+
+                // Add self to top
+                if (userResult.next()) {
+                    JsonObject self = new JsonObject();
+                    self.addProperty("id", userID);
+                    self.addProperty("username", userResult.getString("Username"));
+                    self.addProperty("points", userResult.getInt("TotalPoints"));
+                    self.addProperty("challengesCompleted", userResult.getInt("ChallengesCompleted"));
+                    self.addProperty("isUser", true); // frontend can highlight the logged-in user
+                    leaderboard.add(self);
+                }
+
+                // Add other users
+                int count = 0;
+                while (allUsersResult.next() && count < 5) {
+                    count++;
+                    JsonObject entry = new JsonObject();
+                    entry.addProperty("id", allUsersResult.getInt("UserID"));
+                    entry.addProperty("username", allUsersResult.getString("Username"));
+                    entry.addProperty("points", allUsersResult.getInt("TotalPoints"));
+                    entry.addProperty("challengesCompleted", allUsersResult.getInt("ChallengesCompleted"));
+                    entry.addProperty("isUser", false);
+                    leaderboard.add(entry);
+                }
+
+                successJSON.getJSON().add("leaderboard", leaderboard);
+                operationSuccess = true;
+            }
+            catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // get leaderboard based on the friends on the current user
+        // url: http://localhost:8080/Backend/Backend?reqID=9&username=${username}
+        else if (id == GET.GET_FRIENDS_LEADERBOARD) 
+        {
+            String username = request.getParameter("username");
+
+            try {
+                int userID = getUserID(username);
+                
+                // Query to get friend's total points
                 String friendPointsQuery = """
-                    SELECT U.Username, SUM(UCP.PointsEarned) AS TotalPoints
+                    SELECT U.UserID, U.Username, SUM(UCP.PointsEarned) AS TotalPoints, COUNT(*) AS ChallengesCompleted
                     FROM Friend F
                     JOIN User U ON 
                         (U.UserID = F.ReceiverID AND F.SenderID = %s)
@@ -460,31 +519,44 @@ public class Backend extends HttpServlet
                     ORDER BY TotalPoints DESC;
                 """.formatted(userID, userID);
 
+                String otherFriendsQuery = """
+                    SELECT U.UserID, U.Username
+                    FROM Friend F
+                    JOIN User U ON 
+                        (U.UserID = F.ReceiverID AND F.SenderID = %s)
+                        OR 
+                        (U.UserID = F.SenderID AND F.ReceiverID = %s)
+                    WHERE F.RequestStatus = 'accepted' AND U.UserID NOT IN (SELECT C.UserID FROM UserChallengeProgress C)
+                """.formatted(userID, userID);
+
                 // Execute queries
-                CachedRowSet userResult = sql.executeQuery(userPointsQuery);
                 CachedRowSet friendsResult = sql.executeQuery(friendPointsQuery);
+                CachedRowSet otherFriendsResult = sql.executeQuery(otherFriendsQuery);
 
                 JsonArray leaderboard = new JsonArray();
-
-                // Add self to top
-                if (userResult.next()) {
-                    JsonObject self = new JsonObject();
-                    self.addProperty("username", userResult.getString("Username"));
-                    self.addProperty("points", userResult.getInt("TotalPoints"));
-                    self.addProperty("isUser", true); // frontend can highlight the logged-in user
-                    leaderboard.add(self);
-                }
 
                 // Add friends
                 while (friendsResult.next()) {
                     JsonObject entry = new JsonObject();
+                    entry.addProperty("id", friendsResult.getInt("UserID"));
                     entry.addProperty("username", friendsResult.getString("Username"));
                     entry.addProperty("points", friendsResult.getInt("TotalPoints"));
+                    entry.addProperty("challengesCompleted", friendsResult.getInt("ChallengesCompleted"));
                     entry.addProperty("isUser", false);
                     leaderboard.add(entry);
                 }
 
-                successJSON.getJSON().add("leaderboard", leaderboard);
+                while (otherFriendsResult.next()) {
+                    JsonObject entry = new JsonObject();
+                    entry.addProperty("id", otherFriendsResult.getInt("UserID"));
+                    entry.addProperty("username", otherFriendsResult.getString("Username"));
+                    entry.addProperty("points", 0);
+                    entry.addProperty("challengesCompleted", 0);
+                    entry.addProperty("isUser", false);
+                    leaderboard.add(entry);
+                }
+
+                successJSON.getJSON().add("friends", leaderboard);
                 operationSuccess = true;
             }
             catch (SQLException e) {

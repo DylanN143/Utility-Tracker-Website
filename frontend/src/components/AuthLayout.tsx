@@ -12,8 +12,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for stored username in localStorage (for demo purposes)
-    const storedUsername = localStorage.getItem('username');
+    // Check for stored username in sessionStorage (for demo purposes)
+    const storedUsername = sessionStorage.getItem('username');
 
     if (storedUsername) {
       setUsername(storedUsername);
@@ -24,9 +24,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   }, [navigate]);
 
   const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem('username');
-    localStorage.removeItem('isLoggedIn');
+    // Clear user data from sessionStorage
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('isLoggedIn');
 
     // Redirect to home page
     navigate('/home');

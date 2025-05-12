@@ -21,9 +21,9 @@ function DataInput() {
     const [gasAdvice, setGasAdvice] = useState("");
     const navigate = useNavigate();
 
-    // Get username from localStorage (set by AuthLayout)
+    // Get username from sessionStorage (set by AuthLayout)
     useEffect(() => {
-        const storedUsername = localStorage.getItem('username');
+        const storedUsername = sessionStorage.getItem('username');
         if (storedUsername) {
             setUsername(storedUsername);
         }

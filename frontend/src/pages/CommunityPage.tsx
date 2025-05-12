@@ -7,9 +7,9 @@ import myImage from '../images/forest.jpg';
 function CommunityPage() {
     const [username, setUsername] = useState("");
 
-    // Get username from localStorage (set by AuthLayout)
+    // Get username from sessionStorage (set by AuthLayout)
     useEffect(() => {
-        const storedUsername = localStorage.getItem('username');
+        const storedUsername = sessionStorage.getItem('username');
         if (storedUsername) {
             setUsername(storedUsername);
         }
