@@ -21,10 +21,11 @@ class POST
     public static final int USER_USAGE_INFO = 2;
     public static final int ADD_FRIEND = 3;
     public static final int COMPLETE_CHALLENGE = 4;
-    // public static final int UPDATE_USER_SETTINGS = 5;
-    public static final int RESPOND_FRIEND_REQUEST = 6;
-    public static final int UPDATE_NOTIFICATION_FREQUENCY = 7;
-    public static final int UPDATE_NOTIFICATION_TYPE = 8;
+    public static final int JOIN_CHALLENGE = 5;
+    public static final int SKIP_CHALLENGE = 6;
+    public static final int RESPOND_FRIEND_REQUEST = 7;
+    public static final int UPDATE_NOTIFICATION_FREQUENCY = 8;
+    public static final int UPDATE_NOTIFICATION_TYPE = 9;
 }
 
 class GET
@@ -263,7 +264,7 @@ public class Backend extends HttpServlet
                 int userID = getUserID(username);
         
                 String query = """
-                    SELECT C.Title, C.UtilityType, UCP.ChallengeStatus, UCP.PointsEarned
+                    SELECT C.ChallengeID, C.Title, C.UtilityType, C.StartDate, C.EndDate, C.RewardPoints, UCP.ChallengeStatus, UCP.DateCompleted, UCP.PointsEarned
                     FROM UserChallengeProgress UCP
                     JOIN Challenge C ON UCP.ChallengeID = C.ChallengeID
                     WHERE UCP.UserID = %s;
@@ -274,9 +275,14 @@ public class Backend extends HttpServlet
         
                 while (result.next()) {
                     JsonObject progress = new JsonObject();
+                    progress.addProperty("id", result.getInt("ChallengeID"));
                     progress.addProperty("title", result.getString("Title"));
                     progress.addProperty("utility", result.getString("UtilityType"));
+                    progress.addProperty("startDate", result.getString("StartDate"));
+                    progress.addProperty("endDate", result.getString("EndDate"));
+                    progress.addProperty("points", result.getInt("RewardPoints"));
                     progress.addProperty("status", result.getString("ChallengeStatus"));
+                    progress.addProperty("completeDate", result.getString("DateCompleted"));
                     progress.addProperty("pointsEarned", result.getInt("PointsEarned"));
                     progressArray.add(progress);
                 }
@@ -521,6 +527,7 @@ public class Backend extends HttpServlet
         int id = jsonParser.getNumber("reqID").intValue();
 
         // add new user to database
+        // reqID=1
         if (id == POST.ADD_USER)
         {
             String username = jsonParser.getString("username");
@@ -546,6 +553,7 @@ public class Backend extends HttpServlet
             }
         }
         // posts user's usage data to the database
+        // reqID=2
         else if (id == POST.USER_USAGE_INFO)
         {
             double water = jsonParser.getNumber("waterUsage").doubleValue();
@@ -576,6 +584,7 @@ public class Backend extends HttpServlet
             }
         }
         // add a friend
+        // reqID=3
         else if (id == POST.ADD_FRIEND) 
         {
             String sender = jsonParser.getString("sender");
@@ -597,11 +606,13 @@ public class Backend extends HttpServlet
             }
         }
         // complete the challenge the user was participating in
+        // reqID=4
         else if (id == POST.COMPLETE_CHALLENGE) 
         {
-            int userID = jsonParser.getNumber("userID").intValue();
+            String username = jsonParser.getString("username");
+            int userID = getUserID(username);
             int challengeID = jsonParser.getNumber("challengeID").intValue();
-            int points = jsonParser.getNumber("pointsEarned").intValue();
+            int points = getPointsEarned(challengeID);
             String userResponse = jsonParser.getString("userResponse");
         
             String completeChallengeQuery = """
@@ -621,32 +632,51 @@ public class Backend extends HttpServlet
                 System.out.println(e);
             }
         }
-        // else if (id == POST.UPDATE_USER_SETTINGS) 
-        // {
-        //     String username = jsonParser.getString("username");
-        //     String viewPref = jsonParser.getString("viewPreference");       // 'simple' or 'complex'
-        //     String notifType = jsonParser.getString("notificationType");    // 'email' or 'text'
-        //     String notifFreq = jsonParser.getString("notificationFrequency"); // 'daily' or 'weekly'
+        // reqID=5
+        else if (id == POST.JOIN_CHALLENGE)
+        {
+            String username = jsonParser.getString("username");
+            int userID = getUserID(username);
+            int challengeID = jsonParser.getNumber("challengeID").intValue();
 
-        //     try {
-        //         int userID = sql.getUserID(username);
+            try {
+                String joinChallengeQuery = """
+                    INSERT INTO UserChallengeProgress (UserID, ChallengeID)
+                    VALUES (%s, %s);
+                """.formatted(userID, challengeID);
 
-        //         String updateSettingsQuery = """
-        //             UPDATE User
-        //             SET ViewPreference = '%s',
-        //                 NotificationType = '%s',
-        //                 NotificationFrequency = '%s'
-        //             WHERE UserID = %s;
-        //         """.formatted(viewPref, notifType, notifFreq, userID);
+                sql.executeUpdate(joinChallengeQuery);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // reqID=6
+        else if (id == POST.SKIP_CHALLENGE)
+        {
+            String username = jsonParser.getString("username");
+            int userID = getUserID(username);
+            int challengeID = jsonParser.getNumber("challengeID").intValue();
 
-        //         sql.executeUpdate(updateSettingsQuery);
-        //         operationSuccess = true;
-        //     } catch (SQLException e) {
-        //         operationSuccess = false;
-        //         System.out.println(e);
-        //     }
-        // }
+            try {
+                 String skipChallengeQuery = """
+                    UPDATE UserChallengeProgress
+                    SET ChallengeStatus = 'skipped',
+                        PointsEarned = 0,
+                        DateCompleted = CURRENT_DATE
+                    WHERE UserID = %s AND ChallengeID = %s;
+                """.formatted(userID, challengeID);
+
+                sql.executeUpdate(skipChallengeQuery);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
         // user responds to incoming friend request
+        // reqID=7
         else if (id == POST.RESPOND_FRIEND_REQUEST)
         {
             String sender = jsonParser.getString("sender");
@@ -671,6 +701,7 @@ public class Backend extends HttpServlet
             }
         }
         // update user's notification frequency
+        // reqID=8
         else if (id == POST.UPDATE_NOTIFICATION_FREQUENCY)
         {
             String notificationFreq = jsonParser.getString("notificationFreq");
@@ -701,6 +732,7 @@ public class Backend extends HttpServlet
             }
         }
         // update user's notification type
+        // reqID=9
         else if (id == POST.UPDATE_NOTIFICATION_TYPE)
         {
             String notificationType = jsonParser.getString("notificationType");
@@ -764,6 +796,34 @@ public class Backend extends HttpServlet
             if (result.next())
             {
                 return result.getInt("UserID");
+            }
+            else
+            {
+                operationSuccess = false;
+                throw new SQLException();
+            }
+        }
+        catch (SQLException e)
+        {
+            operationSuccess = false;
+            System.out.println(e);
+        }
+
+        return -1;
+    }
+
+    int getPointsEarned(int challengeID)
+    {
+        String getChallengeQuery =
+        """
+        SELECT RewardPoints FROM Challenge WHERE ChallengeID = %s;
+        """.formatted(challengeID);
+
+        try (CachedRowSet result = sql.executeQuery(getChallengeQuery))
+        {
+            if (result.next())
+            {
+                return result.getInt("RewardPoints");
             }
             else
             {

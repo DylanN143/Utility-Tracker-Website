@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios, { AxiosError } from 'axios';
-// Import mock data for demo
-import { mockUtilityData } from '../mockData/userData';
 
 // Interface for data with date
 interface DateData {
@@ -28,26 +26,6 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
   const handleRefresh = () => {
     setLoading(true);
     setInternalRefreshKey(prevKey => prevKey + 1); // Increment to trigger useEffect
-  };
-
-  // Function to format chart data from mock data
-  const formatMockData = () => {
-    const formattedData = [];
-    const today = new Date();
-
-    // Create date mappings for the last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const day = new Date(today);
-      day.setDate(today.getDate() - i);
-      const dateStr = `${day.getMonth() + 1}/${day.getDate()}`;
-
-      formattedData.push({
-        date: dateStr,
-        cubicft: mockUtilityData.gas[6-i] // Index 0 is the oldest day (6 days ago)
-      });
-    }
-
-    return formattedData;
   };
 
   useEffect(() => {
@@ -172,11 +150,6 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
         }
       `}</style>
     </div>;
-  }
-
-  if (error) {
-    // Even in error state, for demo mode we'll use mock data
-    console.log('Showing mock data instead of error for demo mode');
   }
 
   return (

@@ -11,7 +11,7 @@ import Notifications from '../components/Notifications';
 import myImage from '../images/forest.jpg';
 import axios from 'axios';
 // Import mock data for demo
-import { mockUtilityData, mockNotifications } from '../mockData/userData';
+import { mockNotifications } from '../mockData/userData';
 
 function Dashboard() {
     const [username, setUsername] = useState("");
@@ -37,7 +37,7 @@ function Dashboard() {
 
         try {
             const updateSetings = {
-                reqID: 7, // UPDATE_NOTIFICATION_FREQ
+                reqID: 8, // UPDATE_NOTIFICATION_FREQ
                 notificationFreq: e.target.value,
                 username: username
             };
@@ -54,7 +54,7 @@ function Dashboard() {
 
         try {
             const updateSetings = {
-                reqID: 8, // UPDATE_NOTIFICATION_TYPE
+                reqID: 9, // UPDATE_NOTIFICATION_TYPE
                 notificationType: e.target.value,
                 username: username
             };

@@ -6,8 +6,6 @@ import '../components/Button.css'
 import '../components/ErrorMessage.css'
 import InputBox from '../components/InputBox';
 import axios, { AxiosError } from 'axios';
-// Import mock data for demo
-import { mockUsers } from '../mockData/userData';
 
 function Login() {
   const [username, setUsername] = useState("");
