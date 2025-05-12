@@ -8,8 +8,11 @@ import '../components/DataDisplay.css'
 import ElectricityChart from '../components/ElectricityChart';
 import WaterChart from '../components/WaterChart';
 import GasChart from '../components/GasChart';
+import Notifications from '../components/Notifications';
 import myImage from '../images/forest.jpg';
 import axios from 'axios';
+// Import mock data for demo
+import { mockUtilityData, mockNotifications } from '../mockData/userData';
 
 function Dashboard() {
     const [username, setUsername] = useState("");
@@ -68,16 +71,24 @@ function Dashboard() {
                 </div>
                 
                 {username && (
-                    <div className="logged-in-user">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                        </svg>
-                        {username}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {/* Notifications component */}
+                        <Notifications username={username} />
+                        
+                        <div className="logged-in-user">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                            </svg>
+                            {username}
+                        </div>
                     </div>
                 )}
                 
                 <div>
                     <DataInput/>
+                    <ChallengesButton/>
+                    <CommunityButton/>
+                    <NewsButton/>
                     <HomeButton/>
                     <SignOut/>
                 </div>
@@ -171,6 +182,45 @@ function HomeButton() {
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
         </svg>
         Dashboard
+    </button>
+  );
+}
+
+function ChallengesButton() {
+  const navigate = useNavigate();
+
+  return (
+    <button className='button-outlined' onClick={() => navigate('/challenges')}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+            <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zm-2 2v1c0 1.65-1.35 3-3 3s-3-1.35-3-3V5h6v2zm-10 1V7h2v3c0 1.1.9 2 2 2v2c-2.21 0-4-1.79-4-4zm14 0c0 2.21-1.79 4-4 4v-2c1.1 0 2-.9 2-2V7h2v1z"/>
+        </svg>
+        Challenges
+    </button>
+  );
+}
+
+function CommunityButton() {
+  const navigate = useNavigate();
+
+  return (
+    <button className='button-outlined' onClick={() => navigate('/community')}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+            <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58C.48 14.9 0 15.62 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85-.85-.37-1.79-.58-2.78-.58-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/>
+        </svg>
+        Community
+    </button>
+  );
+}
+
+function NewsButton() {
+  const navigate = useNavigate();
+
+  return (
+    <button className='button-outlined' onClick={() => navigate('/news')}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+            <path d="M22 3H2C.9 3 0 3.9 0 5v14c0 1.1.9 2 2 2h20c1.1 0 1.99-.9 1.99-2L24 5c0-1.1-.9-2-2-2zm0 16H2V5h20v14zM21 6h-7v5h7V6zm-1 2h-5v1h5V8zm0-2h-5v1h5V6zM8 6h5v2H8zm0 3h5v1H8zm0 2h5v1H8zm0 2h14v1H8zm0 2h14v1H8z"/>
+        </svg>
+        News
     </button>
   );
 }

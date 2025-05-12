@@ -1,0 +1,352 @@
+.community-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.community-title {
+  color: #fff;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.community-title h2 {
+  margin: 0;
+}
+
+.community-tabs {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.community-tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: #333; /* Changed from white to dark text color */
+  font-size: 1rem;
+  cursor: pointer;
+  flex: 1;
+  transition: background-color 0.3s;
+}
+
+.community-tab.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+  color: #000; /* Darker text for the active tab for better visibility */
+}
+
+.leaderboard-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 150px 150px;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.leaderboard-user {
+  display: grid;
+  grid-template-columns: 50px 1fr 150px 150px;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+  color: #333; /* Dark text color for better visibility */
+}
+
+.leaderboard-user:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-rank {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.leaderboard-rank.top-1 {
+  color: gold;
+}
+
+.leaderboard-rank.top-2 {
+  color: silver;
+}
+
+.leaderboard-rank.top-3 {
+  color: #cd7f32; /* bronze */
+}
+
+.leaderboard-username {
+  font-weight: 500;
+}
+
+.leaderboard-points {
+  font-weight: 600;
+  color: #4caf50;
+}
+
+.leaderboard-challenges {
+  color: #666;
+}
+
+.friends-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.friend-card {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.friend-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.friend-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+}
+
+.friend-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+  color: #3f6a8a;
+}
+
+.friend-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+  color: #333; /* Added dark text color */
+}
+
+.friend-content {
+  padding: 15px;
+}
+
+.friend-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.friend-stat {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.friend-stat-label {
+  color: #666;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+}
+
+.friend-stat-value {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.friend-stat-value.points {
+  color: #4caf50;
+}
+
+.friend-stat-value.challenges {
+  color: #3f6a8a;
+}
+
+.friend-controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.friend-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.friend-button.view {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.friend-button.view:hover {
+  background-color: #e0e0e0;
+}
+
+.add-friend-form {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: #000; /* Darker text for better visibility */
+  font-weight: bold;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.form-button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background-color: #3f6a8a;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+.form-button:hover {
+  background-color: #335878;
+}
+
+.friend-requests-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.friend-request {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.friend-request:last-child {
+  border-bottom: none;
+}
+
+.friend-request-info {
+  display: flex;
+  align-items: center;
+}
+
+.friend-request-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+  color: #3f6a8a;
+}
+
+.friend-request-name {
+  font-weight: 500;
+  color: #333; /* Added dark text color */
+}
+
+.friend-request-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.friend-request-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.friend-request-button.accept {
+  background-color: #4caf50;
+  color: white;
+}
+
+.friend-request-button.accept:hover {
+  background-color: #3d8b40;
+}
+
+.friend-request-button.reject {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.friend-request-button.reject:hover {
+  background-color: #e0e0e0;
+}
+
+.no-items-message {
+  padding: 40px 20px;
+  text-align: center;
+  color: #333; /* Darker text color */
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}

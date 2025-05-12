@@ -1,0 +1,116 @@
+.notification-container {
+  position: relative;
+  margin-right: 10px;
+}
+
+.notification-icon {
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4b4b;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.notification-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  max-height: 400px;
+  margin-top: 10px;
+}
+
+.notification-header {
+  background-color: #3f6a8a;
+  color: white;
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.clear-all {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.notification-list {
+  overflow-y: auto;
+  max-height: 350px;
+}
+
+.notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 0.9rem;
+  color: #333; /* Dark text color for better visibility */
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-item .notification-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.notification-item .notification-time {
+  color: #888;
+  font-size: 0.75rem;
+  margin-top: 5px;
+}
+
+.notification-item.eco-tip {
+  background-color: #e9f7e9;
+}
+
+.notification-item.reminder {
+  background-color: #fff8e7;
+}
+
+.notification-item.challenge {
+  background-color: #f0e5ff;
+}
+
+.notification-empty {
+  padding: 20px;
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}

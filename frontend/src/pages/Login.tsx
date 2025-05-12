@@ -6,6 +6,8 @@ import '../components/Button.css'
 import '../components/ErrorMessage.css'
 import InputBox from '../components/InputBox';
 import axios, { AxiosError } from 'axios';
+// Import mock data for demo
+import { mockUsers } from '../mockData/userData';
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -18,13 +20,31 @@ function Login() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-    
+
     try {
+      // Demo mode: Check against mock data instead of making API requests
+      console.log("Checking login with mock data");
+      const user = mockUsers.find(u => u.username === username && u.password === password);
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      if (user) {
+        console.log("Login successful with mock data");
+        // Store username in sessionStorage for use in other components
+        sessionStorage.setItem('username', username);
+        navigate('/dashboard');
+      } else {
+        console.log("Login failed with mock data");
+        setError("Invalid username or password. Please check your credentials and try again.");
+      }
+
+      /* Original server-based login code (commented out for demo)
       const url = `http://localhost:8080/Backend/Backend?reqID=1&username=${username}&password=${password}`;
       const response = await axios.get(url);
-      
+
       console.log("Login response:", response.data);
-      
+
       if (response.data.success === true) {
         // Store username in sessionStorage for use in other components
         sessionStorage.setItem('username', username);
@@ -32,25 +52,10 @@ function Login() {
       } else {
         setError("Invalid username or password. Please check your credentials and try again.");
       }
+      */
     } catch (err) {
       console.error("Login error:", err);
-      const axiosError = err as AxiosError;
-      
-      if (axiosError.response) {
-        if (axiosError.response.status === 401) {
-          setError("Unauthorized: Your session may have expired. Please log in again.");
-        } else if (axiosError.response.status === 403) {
-          setError("Access denied: You don't have permission to access this resource.");
-        } else if (axiosError.response.status === 500) {
-          setError("Server error: The system is temporarily unavailable. Please try again later.");
-        } else {
-          setError(`Login error: The server returned an error. Please try again later.`);
-        }
-      } else if (axiosError.request) {
-        setError("Network error: Unable to connect to the server. Please check your internet connection and verify the backend server is running.");
-      } else {
-        setError("Login failed: An unexpected error occurred. Please try again later.");
-      }
+      setError("Login failed: An unexpected error occurred. Please try again later.");
     } finally {
       setIsLoading(false);
     }

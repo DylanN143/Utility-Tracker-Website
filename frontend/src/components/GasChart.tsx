@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios, { AxiosError } from 'axios';
+// Import mock data for demo
+import { mockUtilityData } from '../mockData/userData';
 
 // Interface for data with date
 interface DateData {
@@ -37,11 +39,22 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
           return;
         }
 
+        // DEMO MODE: Use mock data instead of API call
+        console.log('Using mock gas data for demo');
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Use mock gas data
+        const gasData = mockUtilityData.gas;
+        console.log('Mock gas data:', gasData);
+
+        /* Original server-based code (commented out for demo)
         const url = `http://localhost:8080/Backend/Backend?reqID=2&username=${username}`;
         const response = await axios.get(url);
-        
+
         console.log('Backend response:', response.data);
-        
+
         if (response.data.success === true) {
           // Parse the gas data string into an array - or use directly if it's already an array
           let gasData;
@@ -54,6 +67,7 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
             gasData = response.data.gas;
             console.log('Using gas data directly:', gasData);
           }
+        */
           
           // Format data for chart
           const formattedData = [];
@@ -109,13 +123,16 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
             
             setChartData(formattedData);
           }
-        } else {
-          setError('No gas usage data available. Please add data in the Data Entry page.');
-        }
+        // Commenting out this part as part of the demo mode
+        // } else {
+        //   setError('No gas usage data available. Please add data in the Data Entry page.');
+        // }
       } catch (err) {
         console.error('Error fetching gas data:', err);
+        setError('Error loading gas usage data. Please try refreshing the page.');
+        /* Original error handling (commented out for demo)
         const axiosError = err as AxiosError;
-        
+
         if (axiosError.response) {
           if (axiosError.response.status === 401) {
             setError('Your session has expired. Please log in again.');
@@ -131,6 +148,7 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
         } else {
           setError('Error loading gas usage data. Please try refreshing the page.');
         }
+        */
       } finally {
         setLoading(false);
       }
