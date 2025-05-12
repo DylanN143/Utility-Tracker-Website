@@ -10,8 +10,21 @@ interface Challenge {
   id: number;
   title: string;
   description: string;
-  utilityType: 'water' | 'electricity' | 'gas';
+  utilityType: 'water' | 'electricity' | 'gas' | 'other'; // Added 'other' type
   reductionTarget: number;
+  startDate: string;
+  endDate: string;
+  rewardPoints: number;
+  status?: 'in progress' | 'completed' | 'skipped';
+  dateCompleted?: string;
+  pointsEarned?: number;
+}
+
+// Interface for user challenges which may have a subset of fields
+interface UserChallenge {
+  id: number;
+  title: string;
+  utilityType: 'water' | 'electricity' | 'gas' | 'other';
   startDate: string;
   endDate: string;
   rewardPoints: number;
@@ -22,7 +35,7 @@ interface Challenge {
 
 const Challenges: React.FC<ChallengeProps> = ({ username }) => {
   const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
-  const [userChallenges, setUserChallenges] = useState<Challenge[]>([]);
+  const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [activeTab, setActiveTab] = useState<'available' | 'my'>('available');
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,7 +54,36 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
     try {
       setLoading(true);
       setError('');
-      
+
+      // DEMO MODE: Use mock data instead of API calls
+      console.log('Using mock challenge data for demo');
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Import mock data from userData.ts
+      import('../mockData/userData').then(mockData => {
+        // Set active challenges - with type assertion to ensure compatibility
+        const typedChallenges: Challenge[] = mockData.mockChallenges.map(challenge => ({
+          ...challenge,
+          utilityType: challenge.utilityType as 'water' | 'electricity' | 'gas' | 'other',
+          description: challenge.description || '', // Ensure description exists
+          reductionTarget: challenge.reductionTarget || 0 // Ensure reductionTarget exists
+        }));
+        setActiveChallenges(typedChallenges);
+
+        // Set user challenges - with type assertion to ensure compatibility
+        const typedUserChallenges: UserChallenge[] = mockData.mockUserChallenges.map(challenge => ({
+          ...challenge,
+          utilityType: challenge.utilityType as 'water' | 'electricity' | 'gas' | 'other',
+          status: challenge.status as 'in progress' | 'completed' | 'skipped' | undefined
+        }));
+        setUserChallenges(typedUserChallenges);
+
+        setLoading(false);
+      });
+
+      /* Original server-based code (commented out for demo)
       // Fetch active challenges
       const activeChallengesResponse = await axios.get(
         'http://localhost:8080/Backend/Backend?reqID=5'
@@ -59,8 +101,8 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
       if (userChallengesResponse.data.success) {
         setUserChallenges(userChallengesResponse.data.challenges || []);
       }
+      */
       
-      setLoading(false);
     } catch (err) {
       console.error('Error fetching challenges:', err);
       setError('Failed to load challenges. Please try again later.');
@@ -70,6 +112,32 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
 
   const joinChallenge = async (challengeId: number) => {
     try {
+      // DEMO MODE: Use mock join challenge function
+      console.log('Joining challenge in demo mode:', challengeId);
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Find the challenge in mockChallenges
+      import('../mockData/userData').then(mockData => {
+        const challengeToJoin = mockData.mockChallenges.find(c => c.id === challengeId);
+        
+        if (challengeToJoin) {
+          // Update userChallenges by adding this challenge with status 'in progress'
+          const newChallenge: UserChallenge = {
+            ...challengeToJoin,
+            utilityType: challengeToJoin.utilityType as 'water' | 'electricity' | 'gas' | 'other',
+            status: 'in progress' as 'in progress',
+            pointsEarned: 0
+          };
+          
+          setUserChallenges(prevChallenges => [...prevChallenges, newChallenge]);
+          setSuccessMessage('Challenge joined successfully!');
+          setTimeout(() => setSuccessMessage(''), 3000);
+        }
+      });
+      
+      /* Original server-based code (commented out for demo)
       const response = await axios.post('http://localhost:8080/Backend/Backend', {
         reqID: 5, // JOIN_CHALLENGE
         challengeID: challengeId,
@@ -84,6 +152,7 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
         setError('Failed to join challenge. Please try again.');
         setTimeout(() => setError(''), 3000);
       }
+      */
     } catch (err) {
       console.error('Error joining challenge:', err);
       setError('Failed to join challenge. Please try again.');
@@ -98,6 +167,32 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
     }
     
     try {
+      // DEMO MODE: Use mock complete challenge function
+      console.log('Completing challenge in demo mode:', challengeId);
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update the challenge status in userChallenges
+      setUserChallenges(prevChallenges => 
+        prevChallenges.map(challenge => 
+          challenge.id === challengeId 
+            ? { 
+                ...challenge, 
+                status: 'completed' as 'completed', 
+                dateCompleted: new Date().toISOString(),
+                pointsEarned: challenge.rewardPoints 
+              } 
+            : challenge
+        )
+      );
+      
+      setIsModalOpen(false);
+      setCompletionResponse('');
+      setSuccessMessage('Challenge completed successfully! Points added to your account.');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+      /* Original server-based code (commented out for demo)
       const response = await axios.post('http://localhost:8080/Backend/Backend', {
         reqID: 6, // COMPLETE_CHALLENGE
         challengeID: challengeId,
@@ -115,6 +210,7 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
         setError('Failed to complete challenge. Please try again.');
         setTimeout(() => setError(''), 3000);
       }
+      */
     } catch (err) {
       console.error('Error completing challenge:', err);
       setError('Failed to complete challenge. Please try again.');
@@ -124,6 +220,25 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
 
   const skipChallenge = async (challengeId: number) => {
     try {
+      // DEMO MODE: Use mock skip challenge function
+      console.log('Skipping challenge in demo mode:', challengeId);
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update the challenge status in userChallenges
+      setUserChallenges(prevChallenges => 
+        prevChallenges.map(challenge => 
+          challenge.id === challengeId 
+            ? { ...challenge, status: 'skipped' as 'skipped' }
+            : challenge
+        )
+      );
+      
+      setSuccessMessage('Challenge skipped.');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+      /* Original server-based code (commented out for demo)
       const response = await axios.post('http://localhost:8080/Backend/Backend', {
         reqID: 7, // SKIP_CHALLENGE
         challengeID: challengeId,
@@ -138,6 +253,7 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
         setError('Failed to skip challenge. Please try again.');
         setTimeout(() => setError(''), 3000);
       }
+      */
     } catch (err) {
       console.error('Error skipping challenge:', err);
       setError('Failed to skip challenge. Please try again.');
@@ -145,8 +261,48 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
     }
   };
 
-  const openChallengeModal = (challenge: Challenge) => {
-    setSelectedChallenge(challenge);
+  const openChallengeModal = async (challenge: Challenge | UserChallenge) => {
+    try {
+      // In demo mode, if we receive a UserChallenge, we need to fetch the full Challenge
+      if (!('description' in challenge) || !('reductionTarget' in challenge)) {
+        // Import mock data for demo mode
+        const mockData = await import('../mockData/userData');
+        
+        // Find the full challenge details from mockChallenges
+        const challengeDetails = mockData.mockChallenges.find(c => c.id === challenge.id);
+        
+        if (challengeDetails) {
+          // Merge the challenge details to create a full Challenge
+          const fullChallenge: Challenge = {
+            ...challenge,
+            description: challengeDetails.description,
+            reductionTarget: challengeDetails.reductionTarget
+          };
+          setSelectedChallenge(fullChallenge);
+        } else {
+          // If not found, create a minimal Challenge with defaults
+          const defaultChallenge: Challenge = {
+            ...challenge,
+            description: 'Challenge details not available',
+            reductionTarget: 0
+          } as Challenge;
+          setSelectedChallenge(defaultChallenge);
+        }
+      } else {
+        // If it's already a full Challenge, just use it
+        setSelectedChallenge(challenge as Challenge);
+      }
+    } catch (err) {
+      console.error('Error fetching challenge details in demo mode:', err);
+      // Create a minimal Challenge with defaults
+      const defaultChallenge: Challenge = {
+        ...challenge,
+        description: 'Challenge details not available',
+        reductionTarget: 0
+      } as Challenge;
+      setSelectedChallenge(defaultChallenge);
+    }
+    
     setIsModalOpen(true);
   };
 
@@ -285,7 +441,7 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
                               <div className="challenge-card-actions">
                                 <button 
                                   className="challenge-button complete"
-                                  onClick={() => openChallengeModal({...challenge, description: ''})}
+                                  onClick={() => openChallengeModal(challenge)}
                                 >
                                   Complete
                                 </button>
@@ -336,7 +492,7 @@ const Challenges: React.FC<ChallengeProps> = ({ username }) => {
                             <div className="challenge-card-actions">
                               <button 
                                 className="challenge-button view"
-                                onClick={() => openChallengeModal({...challenge, description: ''})}
+                                onClick={() => openChallengeModal(challenge)}
                               >
                                 View Details
                               </button>

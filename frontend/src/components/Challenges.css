@@ -95,6 +95,11 @@
   color: #2e7d32;
 }
 
+.challenge-card-utility.other {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
 .challenge-card-content {
   padding: 15px;
 }
@@ -258,6 +263,27 @@
   font-weight: 500;
 }
 
+/* Make sure modal-utility classes match the card-utility classes */
+.challenge-modal-utility.water {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.challenge-modal-utility.electricity {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.challenge-modal-utility.gas {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.challenge-modal-utility.other {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
 .challenge-modal-description {
   font-size: 1rem;
   color: #333;
@@ -315,4 +341,21 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* Add styling for section subtitle */
+.challenges-subtitle {
+  color: white;
+  margin: 20px 0 15px;
+  font-size: 1.2rem;
+}
+
+/* Style for the loading and no-challenges divs */
+.loading, .no-challenges {
+  padding: 40px 20px;
+  text-align: center;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  margin: 20px 0;
 }

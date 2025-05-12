@@ -21,6 +21,7 @@ export const mockUtilityData = {
 
 // Mock challenges data
 export const mockChallenges = [
+  // Current challenges (the ones the user is already participating in)
   {
     id: 1,
     title: '5-Minute Shower Challenge',
@@ -50,11 +51,64 @@ export const mockChallenges = [
     startDate: '2025-05-11',
     endDate: '2025-05-18',
     rewardPoints: 60
+  },
+
+  // New available challenges
+  {
+    id: 8,
+    title: 'Natural Lighting Challenge',
+    description: 'For one week, try to maximize natural light in your home during the day. Keep blinds and curtains open, and avoid turning on electric lights until sunset.',
+    utilityType: 'electricity',
+    reductionTarget: 8.0,
+    startDate: '2025-05-20',
+    endDate: '2025-05-27',
+    rewardPoints: 40
+  },
+  {
+    id: 9,
+    title: 'Efficient Dishwashing',
+    description: 'Only run your dishwasher when it is completely full, and use the eco-mode if available. Track your water and electricity usage during the challenge period.',
+    utilityType: 'water',
+    reductionTarget: 15.0,
+    startDate: '2025-05-18',
+    endDate: '2025-05-25',
+    rewardPoints: 55
+  },
+  {
+    id: 10,
+    title: 'Public Transport Week',
+    description: 'Use public transportation, carpool, bike, or walk instead of driving alone for an entire week. While not directly tied to home utility usage, reducing transportation emissions is great for the environment!',
+    utilityType: 'other',
+    reductionTarget: 20.0,
+    startDate: '2025-05-22',
+    endDate: '2025-05-29',
+    rewardPoints: 80
+  },
+  {
+    id: 11,
+    title: 'Smart Home Energy Monitor',
+    description: 'Install a smart home energy monitoring system or app and track your energy usage patterns for a week. Identify the top energy consumers in your home.',
+    utilityType: 'electricity',
+    reductionTarget: 5.0,
+    startDate: '2025-05-25',
+    endDate: '2025-06-01',
+    rewardPoints: 35
+  },
+  {
+    id: 12,
+    title: 'Water-Saving Bathroom Challenge',
+    description: 'Install low-flow faucet aerators and a water-efficient showerhead. Track your water usage reduction over the challenge period.',
+    utilityType: 'water',
+    reductionTarget: 18.0,
+    startDate: '2025-05-24',
+    endDate: '2025-06-07',
+    rewardPoints: 65
   }
 ];
 
 // Mock user challenges data
 export const mockUserChallenges = [
+  // Active challenges
   {
     id: 1,
     title: '5-Minute Shower Challenge',
@@ -66,6 +120,28 @@ export const mockUserChallenges = [
     pointsEarned: 0
   },
   {
+    id: 2,
+    title: 'No Standby Electronics',
+    utilityType: 'electricity',
+    startDate: '2025-05-09',
+    endDate: '2025-05-16',
+    rewardPoints: 75,
+    status: 'in progress',
+    pointsEarned: 0
+  },
+  {
+    id: 3,
+    title: 'Lower Thermostat Challenge',
+    utilityType: 'gas',
+    startDate: '2025-05-11',
+    endDate: '2025-05-18',
+    rewardPoints: 60,
+    status: 'in progress',
+    pointsEarned: 0
+  },
+
+  // Completed challenges
+  {
     id: 4,
     title: 'Leak Audit Challenge',
     utilityType: 'water',
@@ -75,6 +151,39 @@ export const mockUserChallenges = [
     status: 'completed',
     dateCompleted: '2025-04-18',
     pointsEarned: 30
+  },
+  {
+    id: 5,
+    title: 'Energy Efficient Lighting',
+    utilityType: 'electricity',
+    startDate: '2025-03-15',
+    endDate: '2025-03-22',
+    rewardPoints: 45,
+    status: 'completed',
+    dateCompleted: '2025-03-22',
+    pointsEarned: 45
+  },
+  {
+    id: 6,
+    title: 'Cold Water Laundry Week',
+    utilityType: 'electricity',
+    startDate: '2025-04-01',
+    endDate: '2025-04-08',
+    rewardPoints: 40,
+    status: 'completed',
+    dateCompleted: '2025-04-08',
+    pointsEarned: 40
+  },
+  {
+    id: 7,
+    title: 'Phantom Power Hunter',
+    utilityType: 'electricity',
+    startDate: '2025-02-20',
+    endDate: '2025-02-27',
+    rewardPoints: 35,
+    status: 'completed',
+    dateCompleted: '2025-02-27',
+    pointsEarned: 35
   }
 ];
 
@@ -118,9 +227,9 @@ export const mockCommunity = {
     { userId: 1, username: 'EcoSarah', points: 350, challengesCompleted: 7 },
     { userId: 3, username: 'EarthAmy', points: 325, challengesCompleted: 6 },
     { userId: 2, username: 'GreenMike', points: 275, challengesCompleted: 5 },
-    { userId: 5, username: 'EnviroEmma', points: 200, challengesCompleted: 4 },
-    { userId: 4, username: 'SustainableJohn', points: 175, challengesCompleted: 3 },
-    { userId: 8, username: 'demo', points: 150, challengesCompleted: 3 }
+    { userId: 8, username: 'demo', points: 150, challengesCompleted: 4 }, // Updated completed challenges count
+    { userId: 5, username: 'EnviroEmma', points: 140, challengesCompleted: 3 },
+    { userId: 4, username: 'SustainableJohn', points: 125, challengesCompleted: 2 }
   ],
   friends: [
     { userId: 1, username: 'EcoSarah', points: 350, challengesCompleted: 7 },
