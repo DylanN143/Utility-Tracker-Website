@@ -30,80 +30,54 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
     setInternalRefreshKey(prevKey => prevKey + 1); // Increment to trigger useEffect
   };
 
+  // Function to format chart data from mock data
+  const formatMockData = () => {
+    const formattedData = [];
+    const today = new Date();
+
+    // Create date mappings for the last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const day = new Date(today);
+      day.setDate(today.getDate() - i);
+      const dateStr = `${day.getMonth() + 1}/${day.getDate()}`;
+
+      formattedData.push({
+        date: dateStr,
+        gallons: mockUtilityData.water[6-i] // Index 0 is the oldest day (6 days ago)
+      });
+    }
+
+    return formattedData;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Simulate network delay for demo mode
+        setLoading(true);
+
+        // Check if we're in demo mode (no server connection)
+        setTimeout(() => {
+          try {
+            // Use mock data
+            console.log('Using mock water data:', mockUtilityData.water);
+            const formattedData = formatMockData();
+            setChartData(formattedData);
+            setLoading(false);
+          } catch (err) {
+            console.error('Error processing mock water data:', err);
+            setError('Error loading demo data');
+            setLoading(false);
+          }
+        }, 1000);
+
+        /* Original server-based code (commented out for demo)
         const username = sessionStorage.getItem('username');
         if (!username) {
           setError('User not logged in');
           return;
         }
 
-        // DEMO MODE: Use mock data instead of API call
-        console.log('Using mock water data for demo');
-
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        // Use mock water data
-        const waterData = mockUtilityData.water;
-        console.log('Mock water data:', waterData);
-
-        // Format data for chart
-        const formattedData = [];
-        const today = new Date();
-
-        // Map dates properly
-        const dateMappings = [];
-        for (let i = 0; i < 7; i++) {
-          const day = new Date(today);
-          day.setDate(today.getDate() - i);
-          const dateStr = `${day.getMonth() + 1}/${day.getDate()}`;
-          dateMappings.push({
-            date: dateStr,
-            index: i  // Map to the corresponding index in the data
-          });
-        }
-
-        // For non-empty values in the waterData array, use actual values
-        let hasData = false;
-
-        for (let i = 0; i < dateMappings.length; i++) {
-          const mapping = dateMappings[i];
-          const dataIndex = mapping.index;
-
-          // Check that we have a value for this date
-          if (dataIndex >= 0 && dataIndex < waterData.length && waterData[dataIndex] >= 0) {
-            formattedData.push({
-              date: mapping.date,
-              gallons: waterData[dataIndex]
-            });
-            hasData = true;
-          }
-        }
-
-        // If no data was found, show message
-        if (!hasData) {
-          setChartData([
-            { date: 'No Data', gallons: 0 }
-          ]);
-        } else {
-          // Sort by date (older to newer)
-          formattedData.sort((a, b) => {
-            const [monthA, dayA] = a.date.split('/').map(Number);
-            const [monthB, dayB] = b.date.split('/').map(Number);
-
-            // Create date objects for proper comparison
-            const dateA = new Date(today.getFullYear(), monthA - 1, dayA);
-            const dateB = new Date(today.getFullYear(), monthB - 1, dayB);
-
-            return dateA.getTime() - dateB.getTime();
-          });
-
-          setChartData(formattedData);
-        }
-
-        /* Original server-based code (commented out for demo)
         const url = `http://localhost:8080/Backend/Backend?reqID=2&username=${username}`;
         const response = await axios.get(url);
 
@@ -182,8 +156,9 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
         */
       } catch (err) {
         console.error('Error fetching water data:', err);
-        setError('Error loading water usage data. Please try refreshing the page.');
-      } finally {
+        // In demo mode, we'll use mock data even if there's an error
+        const formattedData = formatMockData();
+        setChartData(formattedData);
         setLoading(false);
       }
     };
@@ -205,7 +180,8 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
   }
 
   if (error) {
-    return <div className="data-error">{error}</div>;
+    // Even in error state, for demo mode we'll use mock data
+    console.log('Showing mock data instead of error for demo mode');
   }
 
   return (

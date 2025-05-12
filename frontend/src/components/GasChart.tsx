@@ -30,26 +30,54 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
     setInternalRefreshKey(prevKey => prevKey + 1); // Increment to trigger useEffect
   };
 
+  // Function to format chart data from mock data
+  const formatMockData = () => {
+    const formattedData = [];
+    const today = new Date();
+
+    // Create date mappings for the last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const day = new Date(today);
+      day.setDate(today.getDate() - i);
+      const dateStr = `${day.getMonth() + 1}/${day.getDate()}`;
+
+      formattedData.push({
+        date: dateStr,
+        cubicft: mockUtilityData.gas[6-i] // Index 0 is the oldest day (6 days ago)
+      });
+    }
+
+    return formattedData;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Simulate network delay for demo mode
+        setLoading(true);
+
+        // Check if we're in demo mode (no server connection)
+        setTimeout(() => {
+          try {
+            // Use mock data
+            console.log('Using mock gas data:', mockUtilityData.gas);
+            const formattedData = formatMockData();
+            setChartData(formattedData);
+            setLoading(false);
+          } catch (err) {
+            console.error('Error processing mock gas data:', err);
+            setError('Error loading demo data');
+            setLoading(false);
+          }
+        }, 1000);
+
+        /* Original server-based code (commented out for demo)
         const username = sessionStorage.getItem('username');
         if (!username) {
           setError('User not logged in');
           return;
         }
 
-        // DEMO MODE: Use mock data instead of API call
-        console.log('Using mock gas data for demo');
-
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        // Use mock gas data
-        const gasData = mockUtilityData.gas;
-        console.log('Mock gas data:', gasData);
-
-        /* Original server-based code (commented out for demo)
         const url = `http://localhost:8080/Backend/Backend?reqID=2&username=${username}`;
         const response = await axios.get(url);
 
@@ -67,12 +95,11 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
             gasData = response.data.gas;
             console.log('Using gas data directly:', gasData);
           }
-        */
-          
+
           // Format data for chart
           const formattedData = [];
           const today = new Date();
-          
+
           // Map dates properly - the backend returns data for the past 7 days in reverse chronological order
           // Index 0 is today, 1 is yesterday, etc.
           const dateMappings = [];
@@ -80,19 +107,19 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
             const day = new Date(today);
             day.setDate(today.getDate() - i);
             const dateStr = `${day.getMonth() + 1}/${day.getDate()}`;
-            dateMappings.push({ 
-              date: dateStr, 
+            dateMappings.push({
+              date: dateStr,
               index: i  // Map to the corresponding index in the backend data
             });
           }
-          
+
           // For non-empty values in the gasData array, use actual values
           let hasData = false;
-          
+
           for (let i = 0; i < dateMappings.length; i++) {
             const mapping = dateMappings[i];
             const dataIndex = mapping.index;
-            
+
             // Check that we have a value for this date
             if (dataIndex >= 0 && dataIndex < gasData.length && gasData[dataIndex] >= 0) {
               formattedData.push({
@@ -102,7 +129,7 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
               hasData = true;
             }
           }
-          
+
           // If no data was found, show message
           if (!hasData) {
             setChartData([
@@ -113,43 +140,25 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
             formattedData.sort((a, b) => {
               const [monthA, dayA] = a.date.split('/').map(Number);
               const [monthB, dayB] = b.date.split('/').map(Number);
-              
+
               // Create date objects for proper comparison
               const dateA = new Date(today.getFullYear(), monthA - 1, dayA);
               const dateB = new Date(today.getFullYear(), monthB - 1, dayB);
-              
+
               return dateA.getTime() - dateB.getTime();
             });
-            
+
             setChartData(formattedData);
           }
-        // Commenting out this part as part of the demo mode
-        // } else {
-        //   setError('No gas usage data available. Please add data in the Data Entry page.');
-        // }
-      } catch (err) {
-        console.error('Error fetching gas data:', err);
-        setError('Error loading gas usage data. Please try refreshing the page.');
-        /* Original error handling (commented out for demo)
-        const axiosError = err as AxiosError;
-
-        if (axiosError.response) {
-          if (axiosError.response.status === 401) {
-            setError('Your session has expired. Please log in again.');
-          } else if (axiosError.response.status === 404) {
-            setError('No gas usage data found. Please add data in the Data Entry page.');
-          } else if (axiosError.response.status === 500) {
-            setError('Server error while retrieving gas usage data. Please try again later.');
-          } else {
-            setError(`Error loading gas data. Please refresh or try again later.`);
-          }
-        } else if (axiosError.request) {
-          setError('Network error: Unable to reach the server. Please check your internet connection.');
         } else {
-          setError('Error loading gas usage data. Please try refreshing the page.');
+          setError('No gas usage data available. Please add data in the Data Entry page.');
         }
         */
-      } finally {
+      } catch (err) {
+        console.error('Error fetching gas data:', err);
+        // In demo mode, we'll use mock data even if there's an error
+        const formattedData = formatMockData();
+        setChartData(formattedData);
         setLoading(false);
       }
     };
@@ -171,7 +180,8 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
   }
 
   if (error) {
-    return <div className="data-error">{error}</div>;
+    // Even in error state, for demo mode we'll use mock data
+    console.log('Showing mock data instead of error for demo mode');
   }
 
   return (
