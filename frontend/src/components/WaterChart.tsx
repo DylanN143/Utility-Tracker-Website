@@ -53,25 +53,6 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Simulate network delay for demo mode
-        setLoading(true);
-
-        // Check if we're in demo mode (no server connection)
-        setTimeout(() => {
-          try {
-            // Use mock data
-            console.log('Using mock water data:', mockUtilityData.water);
-            const formattedData = formatMockData();
-            setChartData(formattedData);
-            setLoading(false);
-          } catch (err) {
-            console.error('Error processing mock water data:', err);
-            setError('Error loading demo data');
-            setLoading(false);
-          }
-        }, 1000);
-
-        /* Original server-based code (commented out for demo)
         const username = sessionStorage.getItem('username');
         if (!username) {
           setError('User not logged in');
@@ -153,12 +134,26 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
         } else {
           setError('No water usage data available. Please add data in the Data Entry page.');
         }
-        */
       } catch (err) {
         console.error('Error fetching water data:', err);
-        // In demo mode, we'll use mock data even if there's an error
-        const formattedData = formatMockData();
-        setChartData(formattedData);
+        const axiosError = err as AxiosError;
+        
+        if (axiosError.response) {
+          if (axiosError.response.status === 401) {
+            setError('Your session has expired. Please log in again.');
+          } else if (axiosError.response.status === 404) {
+            setError('No data found. Please add gas usage data in the Data Entry page.');
+          } else if (axiosError.response.status === 500) {
+            setError('Server error while retrieving data. Please try again later.');
+          } else {
+            setError(`Error loading data. Please refresh or try again later.`);
+          }
+        } else if (axiosError.request) {
+          setError('Network error: Unable to reach the server. Please check your internet connection.');
+        } else {
+          setError('Error loading gas data. Please try refreshing the page.');
+        }
+      } finally {
         setLoading(false);
       }
     };

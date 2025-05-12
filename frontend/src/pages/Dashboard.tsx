@@ -36,10 +36,6 @@ function Dashboard() {
         setNotificationFreq(e.target.value);
 
         try {
-            // DEMO MODE: Just log the change
-            console.log(`Notification frequency changed to: ${e.target.value}`);
-
-            /* Original server code (commented for demo)
             const updateSetings = {
                 reqID: 3, // UPDATE_NOTIFICATION_FREQ
                 notificationFreq: e.target.value,
@@ -48,7 +44,6 @@ function Dashboard() {
 
             const response = await axios.post('http://localhost:8080/Backend/Backend', updateSetings);
             console.log("Response:", response);
-            */
         } catch (err) {
             console.error("Error updating notification frequency:", err);
         }
@@ -58,10 +53,6 @@ function Dashboard() {
         setNotificationType(e.target.value);
 
         try {
-            // DEMO MODE: Just log the change
-            console.log(`Notification type changed to: ${e.target.value}`);
-
-            /* Original server code (commented for demo)
             const updateSetings = {
                 reqID: 4, // UPDATE_NOTIFICATION_TYPE
                 notificationType: e.target.value,
@@ -70,7 +61,6 @@ function Dashboard() {
 
             const response = await axios.post('http://localhost:8080/Backend/Backend', updateSetings);
             console.log("Response:", response);
-            */
         } catch (err) {
             console.error("Error updating notification type:", err);
         }

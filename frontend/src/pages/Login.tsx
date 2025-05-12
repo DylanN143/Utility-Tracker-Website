@@ -22,25 +22,6 @@ function Login() {
     setIsLoading(true);
 
     try {
-      // Demo mode: Check against mock data instead of making API requests
-      console.log("Checking login with mock data");
-      const user = mockUsers.find(u => u.username === username && u.password === password);
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      if (user) {
-        console.log("Login successful with mock data");
-        // Store username in localStorage for use in other components
-        localStorage.setItem('username', username);
-        localStorage.setItem('isLoggedIn', 'true');
-        navigate('/dashboard');
-      } else {
-        console.log("Login failed with mock data");
-        setError("Invalid username or password. Please check your credentials and try again.");
-      }
-
-      /* Original server-based login code (commented out for demo)
       const url = `http://localhost:8080/Backend/Backend?reqID=1&username=${username}&password=${password}`;
       const response = await axios.get(url);
 
@@ -54,7 +35,6 @@ function Login() {
       } else {
         setError("Invalid username or password. Please check your credentials and try again.");
       }
-      */
     } catch (err) {
       console.error("Login error:", err);
       setError("Login failed: An unexpected error occurred. Please try again later.");

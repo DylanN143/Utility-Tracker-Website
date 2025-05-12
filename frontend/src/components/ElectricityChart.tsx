@@ -53,26 +53,6 @@ function ElectricityChart({ refreshKey = 0 }: ElectricityChartProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Simulate network delay for demo mode
-        setLoading(true);
-
-        // Check if we're in demo mode (no server connection)
-        setTimeout(() => {
-          try {
-            // Use mock data
-            console.log('Using mock electricity data:', mockUtilityData.electricity);
-            const formattedData = formatMockData();
-            setChartData(formattedData);
-            setLoading(false);
-          } catch (err) {
-            console.error('Error processing mock electricity data:', err);
-            setError('Error loading demo data');
-            setLoading(false);
-          }
-        }, 1000);
-
-        // The code below is kept for when you want to switch back to real API calls
-        /*
         const username = sessionStorage.getItem('username');
         if (!username) {
           setError('User not logged in');
@@ -154,9 +134,26 @@ function ElectricityChart({ refreshKey = 0 }: ElectricityChartProps) {
         } else {
           setError('No data available. Please add electricity usage data first.');
         }
-        */
       } catch (err) {
         console.error('Error fetching electricity data:', err);
+        const axiosError = err as AxiosError;
+        
+        if (axiosError.response) {
+          if (axiosError.response.status === 401) {
+            setError('Your session has expired. Please log in again.');
+          } else if (axiosError.response.status === 404) {
+            setError('No data found. Please add electricity usage data in the Data Entry page.');
+          } else if (axiosError.response.status === 500) {
+            setError('Server error while retrieving data. Please try again later.');
+          } else {
+            setError(`Error loading data. Please refresh or try again later.`);
+          }
+        } else if (axiosError.request) {
+          setError('Network error: Unable to reach the server. Please check your internet connection.');
+        } else {
+          setError('Error loading electricity data. Please try refreshing the page.');
+        }
+      } finally {
         setLoading(false);
       }
     };
