@@ -157,9 +157,6 @@ function ElectricityChart({ refreshKey = 0 }: ElectricityChartProps) {
         */
       } catch (err) {
         console.error('Error fetching electricity data:', err);
-        // In demo mode, we'll use mock data even if there's an error
-        const formattedData = formatMockData();
-        setChartData(formattedData);
         setLoading(false);
       }
     };

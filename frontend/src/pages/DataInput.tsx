@@ -68,66 +68,78 @@ function DataInput() {
             
             setMessage("Data submitted successfully! Your utility usage has been recorded.");
 
+            setAdvice("Your utilities usage is lower than the average, check out some tips to save even more below!");
+
+            let above = false;
+
             if (parseInt(electricityUsage) > 26.2)
             {
-                const url = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'electricity'}`;
-                const response = await axios.get(url);
+                above = true;
+                setAdvice("Some of your utilities usage is higher than the average in your area, check out some tips to save below!");
+            }
 
-                if (response.data.success === true) {
-                    // Parse the electricity advice
-                    let electricityAdvice;
-                    try {
-                        // Try to parse and set message
-                        electricityAdvice = JSON.parse(response.data.advice);
-                        console.log('Electricity advice:', electricityAdvice);
-                        setAdvice("Your utilities usage is higher than the average in your area, check out some tips to save below!");
-                        setelectricityAdvice(electricityAdvice);
-                    } catch (e) {
-                        // If parsing fails, output error
-                        console.log('Advice retrieval failed:');
-                    }
+            const electricityUrl = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'electricity'}&above=${above}`;
+            const electricityResponse = await axios.get(electricityUrl);
+
+            if (electricityResponse.data.success === true) {
+                // Parse the electricity advice
+                let electricityAdvice;
+                try {
+                    // Try to parse and set message
+                    electricityAdvice = JSON.parse(electricityResponse.data.advice);
+                    console.log('Electricity advice:', electricityAdvice);
+                    setelectricityAdvice(electricityAdvice);
+                } catch (e) {
+                    // If parsing fails, output error
+                    console.log('Advice retrieval failed:');
                 }
             }
 
+            above = false;
             if (parseInt(waterUsage) > 201.6)
             {
-                const url = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'water'}`;
-                const response = await axios.get(url);
+                above = true
+                setAdvice("Some of your utilities usage is higher than the average in your area, check out some tips to save below!");
+            }
 
-                if (response.data.success === true) {
-                    // Parse the water advice
-                    let waterAdvice;
-                    try {
-                        // Try to parse and set message
-                        waterAdvice = JSON.parse(response.data.advice);
-                        console.log('Water advice:', waterAdvice);
-                        setAdvice("Your utilities usage is higher than the average in your area, check out some tips to save below!");
-                        setWaterAdvice(waterAdvice);
-                    } catch (e) {
-                        // If parsing fails, output error
-                        console.log('Advice retrieval failed:');
-                    }
+            const waterUrl = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'water'}&above=${above}`;
+            const waterResponse = await axios.get(waterUrl);
+
+            if (waterResponse.data.success === true) {
+                // Parse the water advice
+                let waterAdvice;
+                try {
+                    // Try to parse and set message
+                    waterAdvice = JSON.parse(waterResponse.data.advice);
+                    console.log('Water advice:', waterAdvice);
+                    setWaterAdvice(waterAdvice);
+                } catch (e) {
+                    // If parsing fails, output error
+                    console.log('Advice retrieval failed:');
                 }
             }
 
+            above = false;
             if (parseInt(gasUsage) > 93.3)
             {
-                const url = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'gas'}`;
-                const response = await axios.get(url);
+                above = true;
+                setAdvice("Some of your utilities usage is higher than the average in your area, check out some tips to save below!");
+            }
 
-                if (response.data.success === true) {
-                    // Parse the water advice
-                    let gasAdvice;
-                    try {
-                        // Try to parse and set message
-                        gasAdvice = JSON.parse(response.data.advice);
-                        console.log('Gas advice:', gasAdvice);
-                        setAdvice("Your utilities usage is higher than the average in your area, check out some tips to save below!");
-                        setGasAdvice(gasAdvice);
-                    } catch (e) {
-                        // If parsing fails, output error
-                        console.log('Advice retrieval failed:');
-                    }
+            const gasUrl = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'gas'}&above=${above}`;
+            const gasResponse = await axios.get(gasUrl);
+
+            if (gasResponse.data.success === true) {
+                // Parse the water advice
+                let gasAdvice;
+                try {
+                    // Try to parse and set message
+                    gasAdvice = JSON.parse(gasResponse.data.advice);
+                    console.log('Gas advice:', gasAdvice);
+                    setGasAdvice(gasAdvice);
+                } catch (e) {
+                    // If parsing fails, output error
+                    console.log('Advice retrieval failed:');
                 }
             }
             

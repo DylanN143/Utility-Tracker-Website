@@ -5,6 +5,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import com.google.gson.*;
 import com.mysql.cj.result.LocalDateValueFactory;
@@ -181,6 +182,7 @@ public class Backend extends HttpServlet
         else if (id == GET.GET_ADVICE)
         {
             String utilityType = request.getParameter("utilityType");
+            boolean above = Boolean.parseBoolean(request.getParameter("above"));
 
             String getUtilityAdvice =
                     """
@@ -191,7 +193,7 @@ public class Backend extends HttpServlet
             {
                 CachedRowSet adviceList = sql.executeQuery(getUtilityAdvice);
 
-                String adviceResult = getAdvice(adviceList);
+                String adviceResult = getAdvice(adviceList, above);
 
                 Gson gson = new Gson();
 
@@ -513,17 +515,19 @@ public class Backend extends HttpServlet
             LocalDate localSQLDate = sqlDate.toLocalDateTime().toLocalDate();
             double val = data.getDouble(columnKey);
 
-            if (localSQLDate.isAfter(lastDay) || localSQLDate.isEqual(lastDay))
+            if (localSQLDate.isAfter(lastDay))
             {
-                result[currentIndex] = val;
-                ++currentIndex;
+                int daysBetween = (int)(ChronoUnit.DAYS.between(localSQLDate, today));
+                result[daysBetween] = val;
             }
         }
 
-        while (currentIndex < 7)
+        for (int i = 0; i < 7; i++)
         {
-            result[currentIndex] = -1;
-            ++currentIndex;
+            if (result[i] < 0)
+            {
+                result[i] = -1;
+            }
         }
 
         return result;
@@ -534,11 +538,19 @@ public class Backend extends HttpServlet
      * @return
      * String with advice
      */
-    String getAdvice(CachedRowSet data) throws SQLException
+    String getAdvice(CachedRowSet data, boolean above) throws SQLException
     {
         String result = "";
 
-        int adviceNum = (int)(Math.random() * 6);
+        int adviceNum = (int)(Math.random() * 3);
+
+        if (above)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                data.next();
+            }
+        }
 
         if (data.next())
         {
