@@ -16,7 +16,7 @@ function DataInput() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [advice, setAdvice] = useState("");
-    const [electricityAdvice, setelectricityAdvice] = useState("");
+    const [electricityAdvice, setElectricityAdvice] = useState("");
     const [waterAdvice, setWaterAdvice] = useState("");
     const [gasAdvice, setGasAdvice] = useState("");
     const navigate = useNavigate();
@@ -33,7 +33,7 @@ function DataInput() {
         e.preventDefault();
         setMessage("");
         setError("");
-        setelectricityAdvice("");
+        setElectricityAdvice("");
         setWaterAdvice("");
         setGasAdvice("");
         setAdvice("");
@@ -65,82 +65,50 @@ function DataInput() {
             
             const response = await axios.post('http://localhost:8080/Backend/Backend', usageData);
             console.log("Response:", response);
-            
+
             setMessage("Data submitted successfully! Your utility usage has been recorded.");
 
-            setAdvice("Your utilities usage is lower than the average, check out some tips to save even more below!");
-
-            let above = false;
-
-            if (parseInt(electricityUsage) > 26.2)
+            if (parseFloat(electricityUsage) > 26.2 || parseFloat(waterUsage) > 201.6 || parseFloat(gasUsage) > 93.3)
             {
-                above = true;
                 setAdvice("Some of your utilities usage is higher than the average in your area, check out some tips to save below!");
             }
-
-            const electricityUrl = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'electricity'}&above=${above}`;
-            const electricityResponse = await axios.get(electricityUrl);
-
-            if (electricityResponse.data.success === true) {
-                // Parse the electricity advice
-                let electricityAdvice;
-                try {
-                    // Try to parse and set message
-                    electricityAdvice = JSON.parse(electricityResponse.data.advice);
-                    console.log('Electricity advice:', electricityAdvice);
-                    setelectricityAdvice(electricityAdvice);
-                } catch (e) {
-                    // If parsing fails, output error
-                    console.log('Advice retrieval failed:');
-                }
-            }
-
-            above = false;
-            if (parseInt(waterUsage) > 201.6)
+            else
             {
-                above = true
-                setAdvice("Some of your utilities usage is higher than the average in your area, check out some tips to save below!");
+                setAdvice("Your utilities usage is lower than the average, check out some tips to save even more below!");
             }
 
-            const waterUrl = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'water'}&above=${above}`;
-            const waterResponse = await axios.get(waterUrl);
+            try {
+                const getAdvice = {
+                    reqID: 6, // GET_ADVICE
+                    water: waterUsage,
+                    electricity: electricityUsage,
+                    gas: gasUsage
+                };
 
-            if (waterResponse.data.success === true) {
-                // Parse the water advice
-                let waterAdvice;
-                try {
-                    // Try to parse and set message
-                    waterAdvice = JSON.parse(waterResponse.data.advice);
-                    console.log('Water advice:', waterAdvice);
-                    setWaterAdvice(waterAdvice);
-                } catch (e) {
-                    // If parsing fails, output error
-                    console.log('Advice retrieval failed:');
+                const response = await axios.get('http://localhost:8080/Backend/Backend', {params: getAdvice});
+                console.log("Response:", response);
+
+                if (response.data.success === true) {
+                    try {
+                        // Try to parse and set message
+                        const waterAdvice = response.data.waterAdvice.title + ": " + response.data.waterAdvice.content;
+                        console.log("Water advice: ", waterAdvice);
+                        setWaterAdvice(waterAdvice);
+
+                        const electricityAdvice = response.data.electricityAdvice.title + ": " + response.data.electricityAdvice.content;
+                        console.log("Electricity advice: ", electricityAdvice);
+                        setElectricityAdvice(electricityAdvice);
+
+                        const gasAdvice = response.data.gasAdvice.title + ": " + response.data.gasAdvice.content;
+                        console.log("Gas advice: ", gasAdvice);
+                        setGasAdvice(gasAdvice);
+                    } catch (e) {
+                        // If parsing fails, output error
+                        console.log('Advice retrieval failed:');
+                    }
                 }
-            }
-
-            above = false;
-            if (parseInt(gasUsage) > 93.3)
-            {
-                above = true;
-                setAdvice("Some of your utilities usage is higher than the average in your area, check out some tips to save below!");
-            }
-
-            const gasUrl = `http://localhost:8080/Backend/Backend?reqID=3&utilityType=${'gas'}&above=${above}`;
-            const gasResponse = await axios.get(gasUrl);
-
-            if (gasResponse.data.success === true) {
-                // Parse the water advice
-                let gasAdvice;
-                try {
-                    // Try to parse and set message
-                    gasAdvice = JSON.parse(gasResponse.data.advice);
-                    console.log('Gas advice:', gasAdvice);
-                    setGasAdvice(gasAdvice);
-                } catch (e) {
-                    // If parsing fails, output error
-                    console.log('Advice retrieval failed:');
-                }
+            } catch (err) {
+                console.error("Error retrieving advice:", err);
             }
             
             // Clear the form

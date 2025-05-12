@@ -19,15 +19,24 @@ class POST
 {
     public static final int ADD_USER = 1;
     public static final int USER_USAGE_INFO = 2;
-    public static final int UPDATE_NOTIFICATION_FREQUENCY = 3;
-    public static final int UPDATE_NOTIFICATION_TYPE = 4;
+    public static final int ADD_FRIEND = 3;
+    public static final int COMPLETE_CHALLENGE = 4;
+    // public static final int UPDATE_USER_SETTINGS = 5;
+    public static final int RESPOND_FRIEND_REQUEST = 6;
+    public static final int UPDATE_NOTIFICATION_FREQUENCY = 7;
+    public static final int UPDATE_NOTIFICATION_TYPE = 8;
 }
 
 class GET
 {
     public static final int GET_USER = 1;
     public static final int DATA_PAST_SEVEN_DAYS = 2;
-    public static final int GET_ADVICE = 3;
+    public static final int GET_FRIENDS = 3;
+    public static final int GET_CHALLENGES = 4;
+    public static final int GET_USER_PROGRESS = 5;
+    public static final int GET_ADVICE = 6;
+    public static final int GET_NEWS = 7;
+    public static final int GET_LEADERBOARD = 8;
 }
 
 @WebServlet("/Backend")
@@ -177,33 +186,302 @@ public class Backend extends HttpServlet
                 operationSuccess = false;
             }
         }
-        // get water saving advice
-        // url: http://localhost:8080/Backend/Backend?reqID=3&utilityType=${utilityType}
+        // get list of friends to display
+        // url: http://localhost:8080/Backend/Backend?reqID=3&username=${username}
+        else if (id == GET.GET_FRIENDS)
+        {
+            String username = request.getParameter("username");
+        
+            try {
+                int userID = getUserID(username);
+                String friendsQuery = """
+                    SELECT U.Username, F.RequestStatus
+                    FROM Friend F
+                    JOIN User U ON
+                        (U.UserID = F.ReceiverID AND F.SenderID = %s)
+                        OR
+                        (U.UserID = F.SenderID AND F.ReceiverID = %s)
+                    WHERE U.UserID != %s;
+                """.formatted(userID, userID, userID);
+        
+                CachedRowSet result = sql.executeQuery(friendsQuery);
+                JsonArray friends = new JsonArray();
+        
+                while (result.next()) {
+                    JsonObject obj = new JsonObject();
+                    obj.addProperty("username", result.getString("Username"));
+                    obj.addProperty("status", result.getString("RequestStatus"));
+                    friends.add(obj);
+                }
+        
+                successJSON.getJSON().add("friends", friends);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // get list of all available challenges
+        // url: http://localhost:8080/Backend/Backend?reqID=4
+        else if (id == GET.GET_CHALLENGES) {
+            String query = """
+                SELECT ChallengeID, Title, ChallengeDescription, UtilityType, ReductionTarget, StartDate, EndDate, RewardPoints
+                FROM Challenge
+                WHERE StartDate <= CURRENT_DATE AND EndDate >= CURRENT_DATE;
+            """;
+        
+            try (CachedRowSet result = sql.executeQuery(query)) {
+                JsonArray challenges = new JsonArray();
+        
+                while (result.next()) {
+                    JsonObject chal = new JsonObject();
+                    chal.addProperty("id", result.getInt("ChallengeID"));
+                    chal.addProperty("title", result.getString("Title"));
+                    chal.addProperty("description", result.getString("ChallengeDescription"));
+                    chal.addProperty("utility", result.getString("UtilityType"));
+                    chal.addProperty("reductionTarget", result.getDouble("ReductionTarget"));
+                    chal.addProperty("startDate", result.getString("StartDate"));
+                    chal.addProperty("endDate", result.getString("EndDate"));
+                    chal.addProperty("points", result.getInt("RewardPoints"));
+                    challenges.add(chal);
+                }
+        
+                successJSON.getJSON().add("challenges", challenges);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // get list of all challenges the user is participating in and their progress
+        // url: http://localhost:8080/Backend/Backend?reqID=5&username=${username}
+        else if (id == GET.GET_USER_PROGRESS) 
+        {
+            String username = request.getParameter("username");
+        
+            try {
+                int userID = getUserID(username);
+        
+                String query = """
+                    SELECT C.Title, C.UtilityType, UCP.ChallengeStatus, UCP.PointsEarned
+                    FROM UserChallengeProgress UCP
+                    JOIN Challenge C ON UCP.ChallengeID = C.ChallengeID
+                    WHERE UCP.UserID = %s;
+                """.formatted(userID);
+        
+                CachedRowSet result = sql.executeQuery(query);
+                JsonArray progressArray = new JsonArray();
+        
+                while (result.next()) {
+                    JsonObject progress = new JsonObject();
+                    progress.addProperty("title", result.getString("Title"));
+                    progress.addProperty("utility", result.getString("UtilityType"));
+                    progress.addProperty("status", result.getString("ChallengeStatus"));
+                    progress.addProperty("pointsEarned", result.getInt("PointsEarned"));
+                    progressArray.add(progress);
+                }
+        
+                successJSON.getJSON().add("progress", progressArray);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // get list of advice messages for all types of utilities
+        // url: http://localhost:8080/Backend/Backend?reqID=6
         else if (id == GET.GET_ADVICE)
         {
-            String utilityType = request.getParameter("utilityType");
-            boolean above = Boolean.parseBoolean(request.getParameter("above"));
+            String waterAdviceTierQuery = ""; // Will be filled depending on usage
+            String electricityAdviceTierQuery = ""; // Will be filled depending on usage
+            String gasAdviceTierQuery = ""; // Will be filled depending on usage
 
-            String getUtilityAdvice =
-                    """
-                    SELECT title, content FROM advice WHERE utilitytype = '%s';
-                    """.formatted(utilityType);
+            double waterUsage = Double.parseDouble(request.getParameter("water"));
+            double electricityUsage = Double.parseDouble(request.getParameter("electricity"));
+            double gasUsage = Double.parseDouble(request.getParameter("gas"));
 
-            try
-            {
-                CachedRowSet adviceList = sql.executeQuery(getUtilityAdvice);
+            if (waterUsage < 201.6) {
+                // light water advice
+                waterAdviceTierQuery = """
+                    SELECT Title, Content FROM Advice
+                    WHERE UtilityType = 'water'
+                    AND AdviceID IN (1, 2, 3) -- light water advice IDs
+                    ORDER BY RAND() LIMIT 1;
+                """;
+            } else {
+                // stronger advice
+                waterAdviceTierQuery = """
+                    SELECT Title, Content FROM Advice
+                    WHERE UtilityType = 'water'
+                    AND AdviceID IN (4, 5, 6) -- strong water advice IDs
+                    ORDER BY RAND() LIMIT 1;
+                """;
+            }
 
-                String adviceResult = getAdvice(adviceList, above);
+            if (electricityUsage < 26.2) {
+                electricityAdviceTierQuery = """
+                    SELECT Title, Content FROM Advice
+                    WHERE UtilityType = 'electricity'
+                    AND AdviceID IN (7, 8, 9)
+                    ORDER BY RAND() LIMIT 1;
+                """;
+            } else {
+                electricityAdviceTierQuery = """
+                    SELECT Title, Content FROM Advice
+                    WHERE UtilityType = 'electricity'
+                    AND AdviceID IN (10, 11, 12)
+                    ORDER BY RAND() LIMIT 1;
+                """;
+            }
 
-                Gson gson = new Gson();
+            if (gasUsage < 93.3) {
+                gasAdviceTierQuery = """
+                    SELECT Title, Content FROM Advice
+                    WHERE UtilityType = 'gas'
+                    AND AdviceID IN (13, 14, 15)
+                    ORDER BY RAND() LIMIT 1;
+                """;
+            } else {
+                gasAdviceTierQuery = """
+                    SELECT Title, Content FROM Advice
+                    WHERE UtilityType = 'gas'
+                    AND AdviceID IN (16, 17, 18)
+                    ORDER BY RAND() LIMIT 1;
+                """;
+            }
 
-                String advice = gson.toJson(adviceResult);
-                successJSON.getJSON().addProperty("advice", advice);
+            try (CachedRowSet result = sql.executeQuery(waterAdviceTierQuery)) {
+                if (result.next()) {
+                    JsonObject advice = new JsonObject();
+                    advice.addProperty("title", result.getString("Title"));
+                    advice.addProperty("content", result.getString("Content"));
+                    successJSON.getJSON().add("waterAdvice", advice);
+                    operationSuccess = true;
+                } else {
+                    operationSuccess = false; // no advice found
+                }
+            }
+            catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
 
+            try (CachedRowSet result = sql.executeQuery(electricityAdviceTierQuery)) {
+                if (result.next()) {
+                    JsonObject advice = new JsonObject();
+                    advice.addProperty("title", result.getString("Title"));
+                    advice.addProperty("content", result.getString("Content"));
+                    successJSON.getJSON().add("electricityAdvice", advice);
+                    operationSuccess = true;
+                } else {
+                    operationSuccess = false; // no advice found
+                }
+            }
+            catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+
+            try (CachedRowSet result = sql.executeQuery(gasAdviceTierQuery)) {
+                if (result.next()) {
+                    JsonObject advice = new JsonObject();
+                    advice.addProperty("title", result.getString("Title"));
+                    advice.addProperty("content", result.getString("Content"));
+                    successJSON.getJSON().add("gasAdvice", advice);
+                    operationSuccess = true;
+                } else {
+                    operationSuccess = false; // no advice found
+                }
+            }
+            catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // get list of news articles to display
+        // url: http://localhost:8080/Backend/Backend?reqID=7
+        else if (id == GET.GET_NEWS) 
+        {
+            String query = "SELECT Title, URL, Source FROM News";
+
+            try (CachedRowSet result = sql.executeQuery(query)) {
+                JsonArray newsArray = new JsonArray();
+
+                while (result.next()) {
+                    JsonObject news = new JsonObject();
+                    news.addProperty("title", result.getString("Title"));
+                    news.addProperty("url", result.getString("URL"));
+                    news.addProperty("source", result.getString("Source"));
+                    newsArray.add(news);
+                }
+
+                successJSON.getJSON().add("news", newsArray);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // get leaderboard based on the friends on the current user
+        // url: http://localhost:8080/Backend/Backend?reqID=8&username=${username}
+        else if (id == GET.GET_LEADERBOARD) 
+        {
+            String username = request.getParameter("username");
+
+            try {
+                int userID = getUserID(username);
+                
+                // Query to get user's total points
+                String userPointsQuery = """
+                    SELECT Username, SUM(PointsEarned) AS TotalPoints
+                    FROM User U
+                    JOIN UserChallengeProgress UCP ON U.UserID = UCP.UserID
+                    WHERE U.UserID = %s
+                    GROUP BY U.UserID;
+                """.formatted(userID);
+                
+                // Query to get friend's total points
+                String friendPointsQuery = """
+                    SELECT U.Username, SUM(UCP.PointsEarned) AS TotalPoints
+                    FROM Friend F
+                    JOIN User U ON 
+                        (U.UserID = F.ReceiverID AND F.SenderID = %s)
+                        OR 
+                        (U.UserID = F.SenderID AND F.ReceiverID = %s)
+                    JOIN UserChallengeProgress UCP ON U.UserID = UCP.UserID
+                    WHERE F.RequestStatus = 'accepted'
+                    GROUP BY U.Username
+                    ORDER BY TotalPoints DESC;
+                """.formatted(userID, userID);
+
+                // Execute queries
+                CachedRowSet userResult = sql.executeQuery(userPointsQuery);
+                CachedRowSet friendsResult = sql.executeQuery(friendPointsQuery);
+
+                JsonArray leaderboard = new JsonArray();
+
+                // Add self to top
+                if (userResult.next()) {
+                    JsonObject self = new JsonObject();
+                    self.addProperty("username", userResult.getString("Username"));
+                    self.addProperty("points", userResult.getInt("TotalPoints"));
+                    self.addProperty("isUser", true); // frontend can highlight the logged-in user
+                    leaderboard.add(self);
+                }
+
+                // Add friends
+                while (friendsResult.next()) {
+                    JsonObject entry = new JsonObject();
+                    entry.addProperty("username", friendsResult.getString("Username"));
+                    entry.addProperty("points", friendsResult.getInt("TotalPoints"));
+                    entry.addProperty("isUser", false);
+                    leaderboard.add(entry);
+                }
+
+                successJSON.getJSON().add("leaderboard", leaderboard);
                 operationSuccess = true;
             }
-            catch (SQLException e)
-            {
+            catch (SQLException e) {
                 operationSuccess = false;
                 System.out.println(e);
             }
@@ -295,6 +573,101 @@ public class Backend extends HttpServlet
             else
             {
                 operationSuccess = false;
+            }
+        }
+        // add a friend
+        else if (id == POST.ADD_FRIEND) 
+        {
+            String sender = jsonParser.getString("sender");
+            String receiver = jsonParser.getString("receiver");
+
+            try {
+                int senderID = getUserID(sender);
+                int receiverID = getUserID(receiver);
+
+                String addFriendQuery = """
+                    INSERT INTO Friend (SenderID, ReceiverID, RequestStatus)
+                    VALUES (%s, %s, 'pending');
+                """.formatted(senderID, receiverID);
+                sql.executeUpdate(addFriendQuery);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // complete the challenge the user was participating in
+        else if (id == POST.COMPLETE_CHALLENGE) 
+        {
+            int userID = jsonParser.getNumber("userID").intValue();
+            int challengeID = jsonParser.getNumber("challengeID").intValue();
+            int points = jsonParser.getNumber("pointsEarned").intValue();
+            String userResponse = jsonParser.getString("userResponse");
+        
+            String completeChallengeQuery = """
+                UPDATE UserChallengeProgress
+                SET ChallengeStatus = 'completed',
+                    PointsEarned = %s,
+                    UserResponse = '%s',
+                    DateCompleted = CURRENT_DATE
+                WHERE UserID = %s AND ChallengeID = %s;
+            """.formatted(points, userResponse, userID, challengeID);
+        
+            try {
+                sql.executeUpdate(completeChallengeQuery);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
+            }
+        }
+        // else if (id == POST.UPDATE_USER_SETTINGS) 
+        // {
+        //     String username = jsonParser.getString("username");
+        //     String viewPref = jsonParser.getString("viewPreference");       // 'simple' or 'complex'
+        //     String notifType = jsonParser.getString("notificationType");    // 'email' or 'text'
+        //     String notifFreq = jsonParser.getString("notificationFrequency"); // 'daily' or 'weekly'
+
+        //     try {
+        //         int userID = sql.getUserID(username);
+
+        //         String updateSettingsQuery = """
+        //             UPDATE User
+        //             SET ViewPreference = '%s',
+        //                 NotificationType = '%s',
+        //                 NotificationFrequency = '%s'
+        //             WHERE UserID = %s;
+        //         """.formatted(viewPref, notifType, notifFreq, userID);
+
+        //         sql.executeUpdate(updateSettingsQuery);
+        //         operationSuccess = true;
+        //     } catch (SQLException e) {
+        //         operationSuccess = false;
+        //         System.out.println(e);
+        //     }
+        // }
+        // user responds to incoming friend request
+        else if (id == POST.RESPOND_FRIEND_REQUEST)
+        {
+            String sender = jsonParser.getString("sender");
+            String receiver = jsonParser.getString("receiver");
+            String action = jsonParser.getString("action"); // "accept" or "reject"
+
+            try {
+                int senderID = getUserID(sender);
+                int receiverID = getUserID(receiver);
+
+                String updateQuery = """
+                    UPDATE Friend
+                    SET RequestStatus = '%s'
+                    WHERE SenderID = %s AND ReceiverID = %s;
+                """.formatted(action, senderID, receiverID);
+
+                sql.executeUpdate(updateQuery);
+                operationSuccess = true;
+            } catch (SQLException e) {
+                operationSuccess = false;
+                System.out.println(e);
             }
         }
         // update user's notification frequency
@@ -528,39 +901,6 @@ public class Backend extends HttpServlet
             {
                 result[i] = -1;
             }
-        }
-
-        return result;
-    }
-
-    /**
-     * @param data Contains MySQL strings, nothing else
-     * @return
-     * String with advice
-     */
-    String getAdvice(CachedRowSet data, boolean above) throws SQLException
-    {
-        String result = "";
-
-        int adviceNum = (int)(Math.random() * 3);
-
-        if (above)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                data.next();
-            }
-        }
-
-        if (data.next())
-        {
-            for (int i = 0; i < adviceNum; i++)
-            {
-                data.next();
-            }
-
-            result = data.getString("title") + ": ";
-            result += data.getString("content");
         }
 
         return result;

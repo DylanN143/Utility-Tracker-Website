@@ -37,7 +37,7 @@ function Dashboard() {
 
         try {
             const updateSetings = {
-                reqID: 3, // UPDATE_NOTIFICATION_FREQ
+                reqID: 7, // UPDATE_NOTIFICATION_FREQ
                 notificationFreq: e.target.value,
                 username: username
             };
@@ -54,7 +54,7 @@ function Dashboard() {
 
         try {
             const updateSetings = {
-                reqID: 4, // UPDATE_NOTIFICATION_TYPE
+                reqID: 8, // UPDATE_NOTIFICATION_TYPE
                 notificationType: e.target.value,
                 username: username
             };
