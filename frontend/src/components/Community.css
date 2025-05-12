@@ -28,7 +28,7 @@
   padding: 12px 20px;
   background: none;
   border: none;
-  color: #333; /* Changed from white to dark text color */
+  color: white; /* Changed back to white as requested */
   font-size: 1rem;
   cursor: pointer;
   flex: 1;
@@ -38,7 +38,7 @@
 .community-tab.active {
   background-color: rgba(255, 255, 255, 0.2);
   font-weight: bold;
-  color: #000; /* Darker text for the active tab for better visibility */
+  color: white; /* White text for the active tab as requested */
 }
 
 .leaderboard-container {
@@ -47,6 +47,10 @@
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-container .form-title {
+  color: #333; /* Dark text in the white container */
 }
 
 .leaderboard-header {
@@ -219,11 +223,19 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.add-friend-form .form-title {
+  color: #333; /* Dark text in the white container */
+}
+
+.friend-requests-container .form-title {
+  color: #333; /* Dark text in the white container */
+}
+
 .form-title {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 1.2rem;
-  color: #000; /* Darker text for better visibility */
+  color: white; /* Default white text for dark backgrounds */
   font-weight: bold;
 }
 

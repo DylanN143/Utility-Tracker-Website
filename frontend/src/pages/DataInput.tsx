@@ -20,16 +20,14 @@ function DataInput() {
     const [waterAdvice, setWaterAdvice] = useState("");
     const [gasAdvice, setGasAdvice] = useState("");
     const navigate = useNavigate();
-    
-    // Check if user is logged in
+
+    // Get username from localStorage (set by AuthLayout)
     useEffect(() => {
-        const loggedInUsername = sessionStorage.getItem('username');
-        if (!loggedInUsername) {
-            navigate('/login');
-            return;
+        const storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
         }
-        setUsername(loggedInUsername);
-    }, [navigate]);
+    }, []);
     
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -167,33 +165,18 @@ function DataInput() {
     };
 
     return (
-        <div className='header'>
-            <header>
-                <div className="header-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 5v2h-4V5h4M9 5v6H5V5h4m10 8v6h-4v-6h4M9 17v2H5v-2h4M21 3h-8v6h8V3zM11 3H3v10h8V3zm10 8h-8v10h8V11zm-10 4H3v6h8v-6z"/>
-                    </svg>
-                    <p>EcoTrack</p>
-                </div>
-                
-                {username && (
-                    <div className="logged-in-user">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                        </svg>
-                        {username}
-                    </div>
-                )}
-                
-                <div>
-                    <HomeButton/>
-                    <SignOut/>
-                </div>
-            </header>
-            
-            <div className="header-welcome">
+        <div style={{ padding: '20px' }}>
+            <div className="header-welcome" style={{
+                textAlign: 'center',
+                marginBottom: '30px',
+                color: 'white'
+            }}>
                 <h1>Enter Utility Usage</h1>
-                <p>Record your utility consumption to track your usage patterns and help reduce waste.</p>
+                <p style={{
+                    maxWidth: '600px',
+                    margin: '0 auto',
+                    textAlign: 'center'
+                }}>Record your utility consumption to track your usage patterns and help reduce waste.</p>
             </div>
             
             <form onSubmit={submit} className='input'>
@@ -269,51 +252,14 @@ function DataInput() {
                 {gasAdvice && <div className='form-message advice-message'>{gasAdvice}</div>}
                 {error && <div className="form-message error-message">{error}</div>}
                 
-                <SubmitButton/>
+                <button type="submit" className='button'>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '8px' }}>
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    Save Usage Data
+                </button>
             </form>
         </div>
-      );
-}
-
-function SubmitButton() {
-    return (
-        <button type="submit" className='button'>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '8px' }}>
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
-            Save Usage Data
-        </button>
-    );
-}
-
-function HomeButton() {
-  const navigate = useNavigate();
-
-  return (
-    <button className='button-outlined' onClick={() => navigate('/dashboard')}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
-        </svg>
-        Dashboard
-    </button>
-  );
-}
-
-function SignOut() {
-    const navigate = useNavigate();
-    
-    const handleSignOut = () => {
-        sessionStorage.removeItem('username');
-        navigate('/home');
-    };
-  
-    return (
-      <button className='button-outlined' onClick={handleSignOut}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-          </svg>
-          Sign Out
-      </button>
     );
 }
 

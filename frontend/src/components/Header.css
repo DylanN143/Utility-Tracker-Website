@@ -63,9 +63,10 @@
 
 .dropdown-area {
     display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-    margin: 10px;
+    justify-content: center; /* Center the dropdowns horizontally */
+    gap: 20px; /* Increased gap between dropdowns */
+    margin: 20px 0; /* Added vertical margin */
+    width: 100%; /* Full width to allow centering */
 }
 
 .dropdown {
@@ -73,5 +74,26 @@
     background-color: rgba(255, 255, 255, 0.1);
     padding: 8px 15px;
     border-radius: 30px;
-    margin-left: auto;
+    color: white; /* Set the text color to white */
+}
+
+.dropdown label {
+    color: white; /* Ensure dropdown labels are white */
+    margin-right: 8px; /* Add space between label and select box */
+}
+
+.dropdown select {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white; /* Text color for dropdown values */
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    outline: none; /* Remove focus outline */
+    cursor: pointer;
+    min-width: 120px; /* Ensure minimal width for better appearance */
+}
+
+.dropdown select option {
+    background-color: #344a5e; /* Dark background for dropdown items */
+    color: white;
 }

@@ -19,14 +19,14 @@
 
 .success-message {
   background-color: rgba(39, 174, 96, 0.15);
-  color: #ffffff;
+  color: #27ae60; /* Dark green text for better visibility */
   border: 1px solid rgba(39, 174, 96, 0.3);
 }
 
 .advice-message {
   background-color: rgba(255, 153, 0, 0.25);
-  color: #ffffff;
-  border: 1px solid rgba(39, 174, 96, 0.3);
+  color: #e67e22; /* Dark orange text for better visibility */
+  border: 1px solid rgba(255, 153, 0, 0.3); /* Fixed border color to match orange */
 }
 
 .error-message svg,
@@ -35,12 +35,13 @@
 }
 
 .data-error {
-  color: white;
-  background-color: rgba(235, 87, 87, 0.2);
+  color: #eb5757; /* Red text for better visibility */
+  background-color: rgba(235, 87, 87, 0.1); /* Lighter background */
   padding: 12px;
   border-radius: 6px;
   text-align: center;
   font-size: 14px;
   margin: 10px auto;
   max-width: 80%;
+  border: 1px solid rgba(235, 87, 87, 0.3); /* Add border for definition */
 }

@@ -12,7 +12,7 @@
     width: 100%;
     max-width: 500px;
     box-shadow: var(--box-shadow);
-    margin-bottom: 40px;
+    margin: 0 auto 40px; /* Added auto left and right margin to center the form */
     padding: 30px 40px;
 }
 

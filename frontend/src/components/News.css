@@ -99,7 +99,7 @@
 
 .news-pagination button {
   background-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  color: #333; /* Dark text for better visibility */
   border: none;
   padding: 8px 16px;
   margin: 0 5px;
@@ -114,30 +114,33 @@
 
 .news-pagination button:disabled {
   background-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  color: #777; /* Medium gray for disabled state */
   cursor: not-allowed;
 }
 
 .news-loading {
   text-align: center;
   padding: 40px;
-  color: white;
+  color: #333; /* Dark text for better visibility */
   font-style: italic;
+  background-color: rgba(255, 255, 255, 0.8); /* Lighter background */
+  border-radius: 8px;
 }
 
 .news-error {
   padding: 20px;
-  background-color: rgba(255, 0, 0, 0.1);
+  background-color: rgba(255, 0, 0, 0.05); /* Very light red background */
   border-radius: 8px;
-  color: white;
+  color: #e74c3c; /* Dark red text for better visibility */
   margin-bottom: 20px;
+  border: 1px solid rgba(255, 0, 0, 0.1);
 }
 
 .news-empty {
   text-align: center;
   padding: 40px;
-  color: white;
+  color: #333; /* Dark text for better visibility */
   font-style: italic;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.8); /* Lighter background */
   border-radius: 8px;
 }
