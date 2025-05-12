@@ -10,8 +10,6 @@ import GasChart from '../components/GasChart';
 import Notifications from '../components/Notifications';
 import myImage from '../images/forest.jpg';
 import axios from 'axios';
-// Import mock data for demo
-import { mockNotifications } from '../mockData/userData';
 
 function Dashboard() {
     const [username, setUsername] = useState("");
