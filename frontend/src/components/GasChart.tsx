@@ -91,9 +91,7 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
 
           // If no data was found, show message
           if (!hasData) {
-            setChartData([
-              { date: 'No Data', cubicft: 0 }
-            ]);
+            setError('No gas usage data available. Please add data in the Data Entry page.');
           } else {
             // Sort by date (older to newer)
             formattedData.sort((a, b) => {

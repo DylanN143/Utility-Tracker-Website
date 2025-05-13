@@ -453,7 +453,7 @@ public class Backend extends HttpServlet
                     SELECT U.UserID, U.Username, SUM(UCP.PointsEarned) AS TotalPoints, COUNT(*) AS ChallengesCompleted
                     FROM User U
                     JOIN UserChallengeProgress UCP ON U.UserID = UCP.UserID
-                    WHERE UCP.ChallengeStatus = 'completed' AND NOT U.UserID = %s
+                    WHERE UCP.ChallengeStatus = 'completed' AND U.UserID <> %s
                     GROUP BY U.UserID
                     ORDER BY TotalPoints DESC;
                 """.formatted(userID);
@@ -1009,7 +1009,10 @@ public class Backend extends HttpServlet
     double[] getDataLast7Days(CachedRowSet data, String columnKey) throws SQLException
     {
         double[] result = new double[7];
-        int currentIndex = 0;
+        for (int i = 0; i < 7; i++)
+        {
+            result[i] = -1;
+        }
 
         LocalDate today = LocalDate.now();
         LocalDate lastDay = today.minusDays(7);
@@ -1026,15 +1029,7 @@ public class Backend extends HttpServlet
                 result[daysBetween] = val;
             }
         }
-
-        for (int i = 0; i < 7; i++)
-        {
-            if (result[i] < 0)
-            {
-                result[i] = -1;
-            }
-        }
-
+        
         return result;
     }
 }

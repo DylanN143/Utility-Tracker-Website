@@ -85,10 +85,9 @@ function ElectricityChart({ refreshKey = 0 }: ElectricityChartProps) {
 
           // If no data was found, show message
           if (!hasData) {
-            setChartData([
-              { date: 'No Data', kWh: 0 }
-            ]);
-          } else {
+            setError('No electricity data available. Please add data in the Data Entry page.');
+          } 
+          if (hasData) {
             // Sort by date (older to newer)
             formattedData.sort((a, b) => {
               const [monthA, dayA] = a.date.split('/').map(Number);
