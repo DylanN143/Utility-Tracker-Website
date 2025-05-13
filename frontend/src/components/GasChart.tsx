@@ -152,6 +152,10 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
     </div>;
   }
 
+  if (error) {
+    return <div className="data-error">{error}</div>;
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <ResponsiveContainer width="100%" height="85%">
