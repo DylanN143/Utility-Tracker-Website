@@ -44,13 +44,13 @@ function DataInput() {
         }
         
         try {
-            if (!date) {
-                setError("Please select a date");
-                return;
-            }
+            // if (!date) {
+            //     setError("Please select a date");
+            //     return;
+            // }
             
             // Format the date to ensure it's in a consistent format (YYYY-MM-DD)
-            const formattedDate = new Date(date).toISOString().split('T')[0];
+            // const formattedDate = new Date(date).toISOString().split('T')[0];
             
             const usageData = {
                 reqID: 2, // USER_USAGE_INFO
@@ -58,7 +58,7 @@ function DataInput() {
                 electricityUsage: parseFloat(electricityUsage),
                 gasUsage: parseFloat(gasUsage),
                 username: username,
-                date: formattedDate
+                // date: formattedDate
             };
             
             console.log("Submitting data:", usageData);
@@ -112,7 +112,7 @@ function DataInput() {
             }
             
             // Clear the form
-            setDate("");
+            // setDate("");
             setElectricityUsage("");
             setWaterUsage("");
             setGasUsage("");
@@ -168,7 +168,7 @@ function DataInput() {
                         Usage Details
                     </div>
                     
-                    <InputBox
+                    {/* <InputBox
                         label="Date"
                         type="date"
                         value={date}
@@ -180,7 +180,7 @@ function DataInput() {
                                 <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zM5 7V5h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
                             </svg>
                         }
-                    />
+                    /> */}
                     
                     <InputBox
                         label="Electricity Usage"
