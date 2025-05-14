@@ -7,7 +7,6 @@ import '../components/DataDisplay.css'
 import ElectricityChart from '../components/ElectricityChart';
 import WaterChart from '../components/WaterChart';
 import GasChart from '../components/GasChart';
-import Notifications from '../components/Notifications';
 import myImage from '../images/forest.jpg';
 import axios from 'axios';
 

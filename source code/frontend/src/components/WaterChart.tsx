@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios, { AxiosError } from 'axios';
-
-// Interface for data with date
-interface DateData {
-  date: string;
-  value: number;
-}
 
 interface WaterChartProps {
   refreshKey?: number;

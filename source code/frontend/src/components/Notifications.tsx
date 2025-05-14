@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Notifications.css';
 import axios from 'axios';
-// Import mock data for demo
-import { mockNotifications } from '../mockData/userData';
 
 interface NotificationsProp {
   username: string;

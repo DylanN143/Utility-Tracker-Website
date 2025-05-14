@@ -8,7 +8,7 @@ import InputBox from '../components/InputBox';
 import axios, { AxiosError } from 'axios';
 
 function DataInput() {
-    const [date, setDate] = useState("")
+    // const [date, setDate] = useState("")
     const [electricityUsage, setElectricityUsage] = useState("");
     const [waterUsage, setWaterUsage] = useState("");
     const [gasUsage, setGasUsage] = useState("");
