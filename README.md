@@ -9,8 +9,11 @@ Prerequisites:
 
 
 --- Windows Setup ---
+
 Frontend Setup:
+
   Go to "source code" -> frontend
+  
   Open the command line and run "npm install"
 
 
