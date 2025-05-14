@@ -14,6 +14,7 @@ type Notification = {
   type: 'eco-tip' | 'reminder' | 'challenge';
   isRead: boolean;
   timestamp: Date;
+  tableID: number
 };
 
 const Notifications: React.FC<NotificationsProp> = ({ username }) => {
@@ -53,100 +54,75 @@ const Notifications: React.FC<NotificationsProp> = ({ username }) => {
   }, []);
 
   const fetchNotifications = async () => {
-    try {
-      // DEMO MODE: Using mock data instead of making API request
-      console.log('Using mock notifications for demo');
+  try {
+    const response = await axios.get(`http://localhost:8080/Backend/Backend?reqID=10&username=${username}`);
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 600));
-
-      // Use mock notification data
-      const notificationsData = mockNotifications;
-
-      // Transform the data to our notification format
-      const transformedNotifications = notificationsData.map((message: string, index: number) => {
-        // Determine notification type based on content
-        let type: 'eco-tip' | 'reminder' | 'challenge' = 'reminder';
-        if (message.includes('Eco Tip:')) {
-          type = 'eco-tip';
-        } else if (message.includes('Challenge:')) {
-          type = 'challenge';
-        }
-
-        return {
-          id: `${Date.now()}-${index}`,
-          message,
-          type,
-          isRead: false,
-          timestamp: new Date(Date.now() - (index * 1000 * 60 * 60)) // Stagger timestamps
-        };
-      });
+    if (response.data.success) {
+      const notificationsData = (response.data.notifications); // Assuming it's already a JSON array
+    
+      // Transform the data to our frontend format
+      const transformedNotifications = notificationsData.map((item: any) => ({
+        id: `notif-${item.id}`, // Ensure it's a string
+        tableID: item.id,
+        message: item.text,
+        type: item.type as 'eco-tip' | 'reminder' | 'challenge',
+        isRead: item.status === 'read',
+        timestamp: new Date(), // You can replace this with an actual timestamp if available
+      }));
 
       // Merge new notifications with existing ones, avoiding duplicates
       setNotifications(prev => {
-        const existingMessages = new Set(prev.map(n => n.message));
-        const uniqueNewNotifications = transformedNotifications.filter(
-          (n: Notification) => !existingMessages.has(n.message)
-        );
-
-        return [...uniqueNewNotifications, ...prev];
+        const existingIDs = new Set(prev.map(n => n.tableID));
+        const uniqueNew = transformedNotifications.filter((n: Notification) => !existingIDs.has(n.tableID));
+        return [...uniqueNew, ...prev];
       });
-
-      /* Original server-based code (commented out for demo)
-      const response = await axios.get(`http://localhost:8080/Backend/Backend?reqID=4&username=${username}`);
-
-      if (response.data.success) {
-        const notificationsData = JSON.parse(response.data.notifications);
-
-        // Transform the data to our notification format
-        const transformedNotifications = notificationsData.map((message: string, index: number) => {
-          // Determine notification type based on content
-          let type: 'eco-tip' | 'reminder' | 'challenge' = 'reminder';
-          if (message.includes('Eco Tip:')) {
-            type = 'eco-tip';
-          } else if (message.includes('Challenge:')) {
-            type = 'challenge';
-          }
-
-          return {
-            id: `${Date.now()}-${index}`,
-            message,
-            type,
-            isRead: false,
-            timestamp: new Date()
-          };
-        });
-
-        // Merge new notifications with existing ones, avoiding duplicates
-        setNotifications(prev => {
-          const existingMessages = new Set(prev.map(n => n.message));
-          const uniqueNewNotifications = transformedNotifications.filter(
-            (n: Notification) => !existingMessages.has(n.message)
-          );
-
-          return [...uniqueNewNotifications, ...prev];
-        });
-      }
-      */
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+  }
+};
 
   const toggleNotifications = () => {
     setIsOpen(!isOpen);
   };
 
   const markAllAsRead = () => {
+    const unreadNotifications = notifications.filter(n => !n.isRead);
+
+    unreadNotifications.forEach(n => {
+      const apiResponse = axios.post('http://localhost:8080/Backend/Backend', {
+        reqID: 11, 
+        id: n.tableID,
+        status: "read" 
+      });
+    });
+
     setNotifications(notifications.map(n => ({ ...n, isRead: true })));
   };
 
   const clearAll = () => {
+    const apiResponse = axios.post('http://localhost:8080/Backend/Backend', {
+        reqID: 12,
+        username: username
+      });
+
     setNotifications([]);
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(notifications.map(n => 
+    const target = notifications.find(n => n.id === id && !n.isRead);
+  
+    if (target) {
+      const { id, message, type, isRead, timestamp, tableID } = target;
+
+      const apiResponse = axios.post('http://localhost:8080/Backend/Backend', {
+        reqID: 11, 
+        id: target.tableID,
+        status: "read" 
+      });
+    }
+
+    setNotifications(notifications.map(n =>
       n.id === id ? { ...n, isRead: true } : n
     ));
   };

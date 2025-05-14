@@ -111,6 +111,12 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
       return;
     }
 
+    if (friendUsername === username)
+    {
+      setError('Please enter a valid username.');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:8080/Backend/Backend', {
         reqID: 3, // ADD_FRIEND
@@ -122,6 +128,16 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
         setSuccessMessage(`Friend request sent to ${friendUsername}.`);
         setFriendUsername('');
         setTimeout(() => setSuccessMessage(''), 3000);
+
+        const notificationText = `${username} sent you a friend request!`;
+
+        const responseNotif = await axios.post('http://localhost:8080/Backend/Backend', {
+        reqID: 10, 
+        username: friendUsername,
+        text: notificationText,
+        type: "reminder"
+      });
+
       } else {
         setError('Failed to send friend request. The user may not exist or you may already have sent a request.');
         setTimeout(() => setError(''), 3000);
@@ -148,6 +164,17 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
 
         // Refresh friend requests and friends list
         fetchData();
+
+        const resp = response ? 'accepted' : 'rejected';
+        const notificationText = `${username} has ${resp} your friend request!`;
+
+        const responseNotif = await axios.post('http://localhost:8080/Backend/Backend', {
+        reqID: 10,
+        username: requesterUsername,
+        text: notificationText,
+        type: "reminder"
+        })
+
       } else {
         setError('Failed to respond to friend request. Please try again.');
         setTimeout(() => setError(''), 3000);
