@@ -109,6 +109,15 @@ CREATE TABLE IF NOT EXISTS Advice (
     INDEX IdxUtilityType (UtilityType)
 );
 
+CREATE TABLE IF NOT EXISTS Notifications (
+	NotificationID int AUTO_INCREMENT PRIMARY KEY,
+    UserID int NOT NULL,
+    NotificationStatus enum('unread', 'read') DEFAULT 'unread',
+    NotificationType enum('eco-tip', 'reminder', 'challenge') DEFAULT 'reminder',
+    Notification varchar(255),
+    FOREIGN KEY (UserID) REFERENCES User(UserID) ON DELETE CASCADE
+);
+
 INSERT INTO Advice (UtilityType, Title, Content)
 VALUES
 	('water', 'Short Showers', 'Doing great on saving! To save even more water, try keeping your showers under 8 minutes to reduce water waste.'),
