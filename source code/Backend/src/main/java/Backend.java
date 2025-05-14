@@ -203,10 +203,7 @@ public class Backend extends HttpServlet
                 String friendsQuery = """
                     SELECT U.UserID, U.Username
                     FROM Friend F
-                    JOIN User U ON
-                        (U.UserID = F.ReceiverID AND F.SenderID = %s)
-                        OR
-                        (U.UserID = F.SenderID AND F.ReceiverID = %s)
+                    JOIN User U ON U.UserID = F.SenderID AND F.ReceiverID = %s
                     WHERE U.UserID != %s AND F.RequestStatus = 'pending';
                 """.formatted(userID, userID, userID);
 
