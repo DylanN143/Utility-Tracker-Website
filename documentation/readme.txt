@@ -11,6 +11,7 @@ Frontend Setup:
   Open the command line and run "npm install"
 
 Backend Setup:
+  Open "source code" -> Backend in Intellij
   Go to File -> Plugins and install Smart Tomcat
   After it's installed, go to File -> Tomcat Server and click the + sign
     Make it point to the apache tomcat folder inside "source code" -> Backend (if it isn't already)
