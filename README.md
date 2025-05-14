@@ -1,15 +1,18 @@
 # CS160-Project
 https://github.com/DarrelTran/CS160-Project.git
 
+
 Prerequisites: 
   Node.js
   Intellij IDEA (or alternative way to run Apache Tomcat)
   MySQL
 
+
 --- Windows Setup ---
 Frontend Setup:
   Go to "source code" -> frontend
   Open the command line and run "npm install"
+
 
 Backend Setup:
   Open "source code" -> Backend in Intellij
@@ -23,6 +26,7 @@ Backend Setup:
     "Classpath dropdown" should point to Backend
     "Context path" should be /Backend
     "Server port" is 8080
+
 
 Database Setup:
   Make sure the MySQL80 service in Task Manager -> Services is running
