@@ -48,6 +48,7 @@
 }
 
 .challenge-card {
+  position: relative;
   background-color: white;
   border-radius: 8px;
   overflow: hidden;
