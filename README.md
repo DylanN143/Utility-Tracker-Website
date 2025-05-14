@@ -24,21 +24,21 @@ https://github.com/DarrelTran/CS160-Project.git
   
   After it's installed, go to File -> Tomcat Server and click the + sign
   
-    Make it point to the apache tomcat folder inside "source code" -> Backend (if it isn't already)
+  - Make it point to the apache tomcat folder inside "source code" -> Backend (if it isn't already)
     
   Go to the dropdown to the left of the run button and open "Edit Configurations"
   
   If there isn't a configuration already there, click the + sign and choose "Smart Tomcat"
   
-    "Tomcat server" is that same one you made in File -> Tomcat Server
+  - "Tomcat server" is that same one you made in File -> Tomcat Server
     
-    "Deployment directory" should be "source code" -> Backend -> src -> main -> webapp
+  - "Deployment directory" should be "source code" -> Backend -> src -> main -> webapp
     
-    "Classpath dropdown" should point to Backend
+  - "Classpath dropdown" should point to Backend
     
-    "Context path" should be /Backend
+  - "Context path" should be /Backend
     
-    "Server port" is 8080
+  - "Server port" is 8080
 
 
 ## Database Setup:
@@ -63,4 +63,4 @@ https://github.com/DarrelTran/CS160-Project.git
   
   To signup go to "Get Started"
   
-    Note that the phone format is xxx-xxx-xxxx
+  - Note that the phone format is xxx-xxx-xxxx
