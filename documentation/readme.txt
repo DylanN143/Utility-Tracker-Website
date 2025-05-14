@@ -1,3 +1,5 @@
+https://github.com/DarrelTran/CS160-Project.git
+
 Prerequisites: 
   Node.js
   Intellij IDEA (or alternative way to run Apache Tomcat)
