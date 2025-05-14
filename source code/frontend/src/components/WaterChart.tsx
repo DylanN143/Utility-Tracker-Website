@@ -81,6 +81,12 @@ function WaterChart({ refreshKey = 0 }: WaterChartProps) {
               });
               hasData = true;
             }
+            else if (dataIndex >= 0 && dataIndex < waterData.length && waterData[dataIndex] == -1) {
+              formattedData.push({
+                date: mapping.date,
+                gallons: 0
+              });
+            }
           }
 
           // If no data was found, show message

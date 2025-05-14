@@ -81,6 +81,12 @@ function ElectricityChart({ refreshKey = 0 }: ElectricityChartProps) {
               });
               hasData = true;
             }
+            else if (dataIndex >= 0 && dataIndex < electricityData.length && electricityData[dataIndex] == -1) {
+              formattedData.push({
+                date: mapping.date,
+                kWh: 0
+              });
+            }
           }
 
           // If no data was found, show message

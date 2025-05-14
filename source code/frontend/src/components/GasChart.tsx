@@ -81,6 +81,12 @@ function GasChart({ refreshKey = 0 }: GasChartProps) {
               });
               hasData = true;
             }
+            else if (dataIndex >= 0 && dataIndex < gasData.length && gasData[dataIndex] == -1) {
+              formattedData.push({
+                date: mapping.date,
+                cubicft: 0
+              });
+            }
           }
 
           // If no data was found, show message
