@@ -267,7 +267,7 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
                 leaderboard.map((entry, index) => (
                   <div key={entry.userId} className="leaderboard-user">
                     <div className={`leaderboard-rank ${index < 3 ? `top-${index + 1}` : ''}`}>{index + 1}</div>
-                    <div className="leaderboard-username">{entry.username}</div>
+                    <div className="leaderboard-username">{entry.isUser ? entry.username + " (You)" : entry.username}</div>
                     <div className="leaderboard-points">{entry.points} pts</div>
                     <div className="leaderboard-challenges">{entry.challengesCompleted} completed</div>
                   </div>
@@ -326,7 +326,7 @@ const Community: React.FC<CommunityProps> = ({ username }) => {
                     <div key={friend.userId} className="friend-card">
                       <div className="friend-header">
                         <div className="friend-avatar">{getInitials(friend.username)}</div>
-                        <h3 className="friend-name">{friend.username}</h3>
+                        <h3 className="friend-name">{friend.isUser ? friend.username + " (You)" : friend.username}</h3>
                       </div>
                       <div className="friend-content">
                         <div className="friend-stats">
