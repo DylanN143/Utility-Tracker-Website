@@ -1,7 +1,3 @@
-# CS160-Project
-https://github.com/DarrelTran/CS160-Project.git
-
-
 ## Prerequisites: 
   Node.js
   
